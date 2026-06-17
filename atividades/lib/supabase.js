@@ -52,20 +52,21 @@
     return cfg.url + "/rest/v1/" + cfg.table;
   }
 
-  /* Envia o resultado de um grupo (UPSERT por (sessao, grupo)).
-     payload deve trazer só colunas existentes na tabela: sessao, grupo,
-     pontuacao, casos. O envio é incremental: a atividade chama a cada caso
-     concluído com o estado CUMULATIVO. on_conflict=sessao,grupo +
-     resolution=merge-duplicates fazem o servidor sobrescrever a linha do grupo
-     (exige o índice único respostas_continuum_sessao_grupo_uidx — ver setup.sql)
-     em vez de criar duplicatas. Retorna {ok:true} ou {ok:false, erro}. Nunca
-     lança: quem chama trata o ok=false como "salvou só local". */
+  /* Envia o resultado de um grupo (UPSERT por (sessao, atividade, grupo)).
+     payload deve trazer só colunas existentes na tabela: sessao, atividade,
+     grupo, pontuacao, dados (jsonb com o payload específico da atividade). O
+     envio é incremental: a atividade chama a cada passo concluído com o estado
+     CUMULATIVO. on_conflict=sessao,atividade,grupo + resolution=merge-duplicates
+     fazem o servidor sobrescrever a linha do grupo (exige o índice único
+     respostas_sessao_atividade_grupo_uidx — ver setup.sql) em vez de duplicar.
+     Retorna {ok:true} ou {ok:false, erro}. Nunca lança: quem chama trata o
+     ok=false como "salvou só local". */
   async function enviarResultado(payload) {
     if (!configValida()) {
       return { ok: false, erro: "config-invalida" };
     }
     try {
-      var resp = await fetch(endpoint() + "?on_conflict=sessao,grupo", {
+      var resp = await fetch(endpoint() + "?on_conflict=sessao,atividade,grupo", {
         method: "POST",
         headers: headers({
           "Content-Type": "application/json",
@@ -83,14 +84,15 @@
     }
   }
 
-  /* Lê todas as respostas de uma sessão (SELECT), ordenadas por criação.
-     Retorna um array (vazio em caso de erro — o painel mostra "sem dados"
-     em vez de quebrar). */
-  async function consultarSessao(sessao) {
+  /* Lê as respostas de uma (sessao, atividade) — SELECT filtrando por AMBOS,
+     ordenadas por criação. Retorna um array (vazio em caso de erro — o painel
+     mostra "sem dados" em vez de quebrar). */
+  async function consultarSessao(sessao, atividade) {
     if (!configValida()) return [];
     try {
       var qs = "?sessao=eq." + encodeURIComponent(sessao) +
-               "&select=grupo,pontuacao,casos,criado_em" +
+               "&atividade=eq." + encodeURIComponent(atividade) +
+               "&select=grupo,pontuacao,dados,criado_em" +
                "&order=criado_em.asc";
       var resp = await fetch(endpoint() + qs, {
         method: "GET",

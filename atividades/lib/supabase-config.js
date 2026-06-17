@@ -15,8 +15,8 @@
 window.SUPABASE_CONFIG = {
   url:     "https://yfnilksnqehysxunujli.supabase.co",     // ex.: https://abcdxyz.supabase.co
   anonKey: "sb_publishable_7TvKSU1mXbodAHVwr_gS6g_gXsHKd7p",      // ex.: eyJhbGciOi... (a pública)
-  table:   "respostas_continuum"
-  // Sem "sessaoPadrao": o código da sessão é GERADO no painel do professor e
-  // DIGITADO pelos alunos na tela inicial da atividade — não há mais default
-  // silencioso. (Ver painel-continuum.html e 01-continuum.html.)
+  table:   "respostas"
+  // Tabela ÚNICA multi-atividade (discriminador `atividade`). Sem "sessaoPadrao":
+  // o código da sessão é GERADO no painel e DIGITADO pelos alunos na tela inicial
+  // da atividade — não há default silencioso. (Ver painel.html e 01-continuum.html.)
 };
