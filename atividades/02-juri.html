@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atividade 2 — O júri: até onde vai a responsabilidade?</title>
+
+<!-- =========================================================================
+     ATIVIDADE 2 — JÚRI SIMULADO (imputabilidade e responsabilidade)
+     App self-contained, sem dependências externas (sem CDN), orientado a dados.
+     Identidade visual herdada do tema editorial do livro (paper + laranja queimado).
+     Pensado para 1 dispositivo por grupo. Casos REVELADOS (julgar exige os fatos),
+     mas a identidade do caso só aparece na revelação (sem spoiler antes do voto).
+     SEM placar — veredito não tem gabarito. Envio INCREMENTAL ao Supabase via
+     upsert (atividade:"juri", dados.vereditos cumulativo); a justificativa textual
+     fica só no aparelho, não vai ao painel. Mesmo banco/lib do continuum.
+     ========================================================================= -->
+
+<style>
+/* ---- Fontes self-hosted (mesmas do livro). Fallbacks se abertas fora do site. ---- */
+@font-face { font-family:"Playfair Display"; src:url("../fonts/PlayfairDisplay-Regular.woff2") format("woff2"); font-weight:400; font-display:swap; }
+@font-face { font-family:"Playfair Display"; src:url("../fonts/PlayfairDisplay-Italic.woff2") format("woff2"); font-weight:400; font-style:italic; font-display:swap; }
+@font-face { font-family:"Playfair Display"; src:url("../fonts/PlayfairDisplay-Bold.woff2") format("woff2"); font-weight:700; font-display:swap; }
+@font-face { font-family:"Inter"; src:url("../fonts/Inter-Regular.woff2") format("woff2"); font-weight:400; font-display:swap; }
+@font-face { font-family:"Inter"; src:url("../fonts/Inter-Medium.woff2") format("woff2"); font-weight:500; font-display:swap; }
+@font-face { font-family:"Inter"; src:url("../fonts/Inter-SemiBold.woff2") format("woff2"); font-weight:600; font-display:swap; }
+@font-face { font-family:"JetBrains Mono"; src:url("../fonts/JetBrainsMono-Regular.woff2") format("woff2"); font-weight:400; font-display:swap; }
+
+:root{
+  --paper:#F9F9F7; --paper-content:#ffffff; --sidebar-bg:#f2f2ee;
+  --border-color:#e5e5e0; --border-soft:#dcdcd8;
+  --text-primary:#1a1a1a; --text-body:#333; --text-secondary:#444; --text-muted:#888;
+  --brand:#b45309; --brand-dark:#92400e; --brand-soft:rgba(180,83,9,.08); --brand-line:rgba(180,83,9,.20);
+  --ok:#2f7d4f; --ok-soft:rgba(47,125,79,.10);
+  --warn:#b07a14; --warn-soft:rgba(176,122,20,.12);
+  --font-sans:"Inter",ui-sans-serif,system-ui,sans-serif;
+  --font-serif:"Playfair Display",Georgia,"Times New Roman",serif;
+  --font-mono:"JetBrains Mono",ui-monospace,monospace;
+}
+
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--paper); color:var(--text-body);
+  font-family:var(--font-sans); line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:780px; margin:0 auto; padding:24px 18px 80px}
+
+h1,h2,h3{font-family:var(--font-serif); font-weight:700; color:var(--text-primary); line-height:1.15; margin:0 0 .4em}
+h1{font-size:1.7rem} h2{font-size:1.3rem} h3{font-size:1.05rem}
+p{margin:0 0 1em}
+.muted{color:var(--text-muted)} .small{font-size:.86rem}
+.kicker{font-family:var(--font-mono); font-size:.72rem; letter-spacing:.08em; text-transform:uppercase; color:var(--brand); margin-bottom:.5em}
+
+/* ---- Cartões / blocos ---- */
+.card{background:var(--paper-content); border:1px solid var(--border-color); border-radius:4px; padding:22px; box-shadow:0 1px 2px rgba(0,0,0,.03)}
+.vinheta{font-size:1.06rem; line-height:1.7; color:var(--text-secondary); border-left:3px solid var(--brand-line); padding-left:16px; margin:.2em 0 0}
+
+/* ---- Botões ---- */
+.btn{font-family:var(--font-sans); font-size:.95rem; font-weight:600; cursor:pointer;
+  border:1px solid var(--brand); background:var(--brand); color:#fff; padding:11px 20px; border-radius:3px; transition:background .15s}
+.btn:hover{background:var(--brand-dark); border-color:var(--brand-dark)}
+.btn:disabled{opacity:.4; cursor:not-allowed}
+.btn.ghost{background:transparent; color:var(--brand)}
+.btn.ghost:hover{background:var(--brand-soft)}
+.row{display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-top:18px}
+.row.end{justify-content:flex-end}
+
+/* ---- Opções (capacidade / veredito) — seleção sem gabarito ---- */
+.options{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:6px}
+@media(max-width:540px){ .options{grid-template-columns:1fr} }
+.opt{text-align:left; border:1px solid var(--border-color); background:var(--paper-content); border-radius:4px;
+  padding:13px 14px; cursor:pointer; font-family:var(--font-sans); font-size:.93rem; color:var(--text-primary); transition:border-color .12s, background .12s}
+.opt:hover{border-color:var(--brand); background:var(--brand-soft)}
+.opt b{display:block; font-weight:600; margin-bottom:2px}
+.opt span{font-size:.8rem; color:var(--text-muted)}
+.opt.sel{border-color:var(--brand); background:var(--brand-soft)}
+
+/* ---- Pergunta / nota do caso civil ---- */
+.q{margin-top:24px}
+.nota-civil{margin-top:24px; padding:14px 16px; border-radius:4px; background:var(--warn-soft); border:1px solid var(--warn); font-size:.95rem; color:var(--text-secondary)}
+.nota-civil b{color:var(--text-primary)}
+
+textarea{width:100%; font-family:var(--font-sans); font-size:.95rem; padding:11px 12px; border:1px solid var(--border-color);
+  border-radius:4px; resize:vertical; min-height:64px; color:var(--text-primary); background:var(--paper-content)}
+textarea:focus{outline:none; border-color:var(--brand)}
+input[type=text]{width:100%; font-family:var(--font-sans); font-size:1rem; padding:11px 12px; border:1px solid var(--border-color); border-radius:4px}
+input[type=text]:focus{outline:none; border-color:var(--brand)}
+label.lbl{display:block; font-size:.84rem; font-weight:600; color:var(--text-secondary); margin:18px 0 6px}
+
+/* ---- Reveal ---- */
+.reveal{margin-top:18px; padding:16px 18px; border:1px solid var(--brand-line); border-radius:4px; background:#fffdfa}
+.reveal .who{font-family:var(--font-serif); font-size:1.2rem; font-weight:700; color:var(--text-primary); margin-bottom:4px}
+.reveal .nota{font-style:italic; color:var(--text-muted); margin-bottom:6px}
+.reveal .lab{font-family:var(--font-mono); font-size:.7rem; text-transform:uppercase; letter-spacing:.06em; color:var(--brand); margin-top:14px; margin-bottom:4px}
+.reveal .lab:first-of-type{margin-top:8px}
+.reveal p{margin:0 0 2px}
+.reveal .link a{color:var(--brand); text-decoration:none; font-weight:600}
+.reveal .link a:hover{color:var(--brand-dark); text-decoration:underline}
+
+/* ---- Progresso / topo ---- */
+.topbar{display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; font-size:.82rem; color:var(--text-muted)}
+.progress{height:5px; background:var(--border-color); border-radius:3px; overflow:hidden; margin-bottom:22px}
+.progress > i{display:block; height:100%; background:var(--brand); width:0; transition:width .3s}
+
+/* ---- Síntese ---- */
+.synth-list{margin-top:18px; border-top:1px solid var(--border-color)}
+.synth-list .item{border-bottom:1px solid var(--border-color); padding:12px 0}
+.synth-list .item b{font-family:var(--font-serif)}
+/* Aviso discreto e persistente de salvamento automático. Verde = salvo; laranja = só local. */
+.sync-msg{margin-top:4px}
+.sync-msg.ok{color:var(--ok)}
+.sync-msg.erro{color:var(--warn)}
+/* Convite de leitura ao fim — link discreto, não compete com "Refazer". */
+.read-cta{margin-top:26px; padding-top:18px; border-top:1px solid var(--border-color);
+  font-size:.92rem; color:var(--text-secondary)}
+.read-cta cite{font-family:var(--font-serif); font-style:italic; color:var(--text-primary)}
+.read-cta a{color:var(--brand); text-decoration:none; font-weight:600; white-space:nowrap}
+.read-cta a:hover{color:var(--brand-dark); text-decoration:underline}
+
+.hidden{display:none !important}
+.step{display:none} .step.active{display:block; animation:fade .25s ease}
+@keyframes fade{from{opacity:0; transform:translateY(4px)} to{opacity:1; transform:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ============ ENTRADA ============ -->
+  <section id="intro" class="step active">
+    <div class="kicker">Atividade 2 · Júri simulado</div>
+    <h1>O júri: até onde vai a responsabilidade?</h1>
+    <p>Vocês são o júri de um tribunal. Vão analisar uma série de casos reais e decidir, em grupo, <b>quanto cada pessoa responde pelo que fez</b> — e o que a lei deve fazer com isso.</p>
+    <p>No Brasil, os crimes contra a vida, como o homicídio, não são decididos por um juiz: quem decide é um <b>júri popular</b> — sete pessoas comuns, sorteadas, sem formação em Direito. São elas que ouvem a acusação e a defesa (cada lado puxando os fatos para o seu argumento) e decidem a pergunta central: a pessoa é responsável pelo que fez? É aí que entram teses como a da inimputabilidade. O juiz preside o julgamento e respeita o que o júri decidir; depois, cabe a ele fixar a pena. Esse júri, hoje, são vocês.</p>
+    <p>Na maioria dos casos, alguém causou dano e a pergunta é criminal: para responder por um ato, a pessoa precisa, no momento dele, de duas capacidades — <b>entender</b> que aquilo é errado e <b>conseguir se controlar</b> de acordo com esse entendimento. Quando uma delas falha por causa de uma condição mental, a responsabilidade pode ser reduzida ou desaparecer.</p>
+    <p><b>O último caso não é crime</b>, ninguém feriu ninguém. A pergunta é se esta pessoa ainda deve decidir por si mesma, ou se alguém deveria decidir por ela.</p>
+    <p>Em cada caso, vocês vão ler os fatos, identificar qual capacidade estava comprometida e dar um veredito.</p>
+    <p>Para todos esses casos <b>não há uma resposta correta</b>: peritos e tribunais reais divergem, e o que se decide numa época pode não valer no futuro. Por isso, redijam um pequeno texto justificando o veredito do seu grupo — é ele que vocês vão defender no debate com a turma.</p>
+    <div class="card">
+      <p class="small muted" style="margin-bottom:14px">Trabalhem em grupo, num só aparelho. Para começar, digitem o código da sessão que o professor projetou na tela e escolham um nome para o grupo.</p>
+      <label class="lbl" for="sessao" style="margin-top:0">Código da sessão</label>
+      <input type="text" id="sessao" placeholder="O professor projeta este código" autocomplete="off" autocapitalize="characters" spellcheck="false">
+      <p class="small" id="sessaoErro" style="color:#c44; display:none; margin-top:6px"></p>
+      <p class="small muted" style="margin:14px 0 6px">São permitidos no nome do grupo letras, números, hífen (-) e underline (_); não use espaços, acentos ou ç.</p>
+      <label class="lbl" for="grupo" style="margin-top:0">Nome ou número do grupo</label>
+      <input type="text" id="grupo" placeholder="Ex.: Mesa-3 ou Os_Frontais" autocomplete="off" autocapitalize="off" spellcheck="false">
+      <p class="small" id="grupoErro" style="color:#c44; display:none; margin-top:6px"></p>
+      <div class="row">
+        <button class="btn" id="startBtn">Começar</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ LOOP DE CASOS ============ -->
+  <section id="loop" class="step">
+    <div class="topbar">
+      <span id="caseCounter">Caso 1 de 4</span>
+    </div>
+    <div class="progress"><i id="progressBar"></i></div>
+
+    <!-- passo A: ler os fatos + deliberar (capacidade → veredito → justificativa) -->
+    <div id="stepDelib" class="step">
+      <h2>Os fatos</h2>
+      <p class="vinheta" id="caseVinheta"></p>
+
+      <div class="q">
+        <h3 id="q1Label"></h3>
+        <div class="options" id="capBox"></div>
+      </div>
+
+      <div class="nota-civil hidden" id="notaCivil"></div>
+
+      <div class="q">
+        <h3 id="q2Label"></h3>
+        <div class="options" id="verBox"></div>
+      </div>
+
+      <label class="lbl" for="justif">Por que este veredito? Redijam em grupo o argumento que vão defender no debate.</label>
+      <textarea id="justif" rows="5" style="min-height:120px" placeholder="Não há gabarito: o que vale é o argumento do grupo."></textarea>
+      <div class="row end"><button class="btn" id="revealBtn" disabled>Revelar →</button></div>
+    </div>
+
+    <!-- passo B: revelar -->
+    <div id="stepReveal" class="step">
+      <h3>O veredito do mundo real</h3>
+      <div class="reveal">
+        <div class="who" id="revWho"></div>
+        <p class="nota small" id="revNota"></p>
+        <div class="lab">No mundo real</div>
+        <p id="revReal"></p>
+        <div class="lab">O que está em jogo</div>
+        <p id="revJogo"></p>
+        <div class="lab">O que complica</div>
+        <p id="revComplica"></p>
+        <div class="lab">Fonte</div>
+        <p class="small muted" id="revFonte"></p>
+        <p class="link" style="margin-top:14px"><a id="revLink" target="_blank" rel="noopener">Ler o caso completo →</a></p>
+      </div>
+      <div class="row end"><button class="btn" id="nextBtn">Próximo caso →</button></div>
+    </div>
+  </section>
+
+  <!-- ============ SÍNTESE ============ -->
+  <section id="synth" class="step">
+    <div class="kicker">Fim da sessão</div>
+    <h1>O veredito de vocês</h1>
+    <p>Júri <b id="synthGroup"></b>. Estes foram os vereditos de vocês, caso a caso.</p>
+
+    <div class="synth-list" id="synthList"></div>
+
+    <div class="card" style="margin-top:18px; background:var(--sidebar-bg)">
+      <h3>Para o debate de turma</h3>
+      <p class="small">Olhem o conjunto antes de discutir com a sala:</p>
+      <p class="small" style="margin-bottom:0">• Em qual caso a turma mais se <b>dividiu</b>?<br>• Qual foi o <b>mais difícil</b> de decidir, e por quê?<br>• Houve algum caso em que vocês <b>mudaram de ideia</b> ao pesar os dois lados?<br>• Nos três crimes, a falta de controle <i>desculpava</i> a pessoa. No caso do contador, a mesma falta de controle podia <i>custar</i> a ele o direito de decidir. Por que ela às vezes <b>livra</b> e às vezes <b>restringe</b>?</p>
+    </div>
+
+    <p class="small sync-msg" id="syncMsg" style="margin-top:14px"></p>
+    <div class="row">
+      <button class="btn ghost" id="restartBtn">Refazer</button>
+    </div>
+
+    <!-- Convite de volta ao livro (../index.html = raiz do site publicado). -->
+    <p class="read-cta">Esses casos vêm do livro <cite>Intencionalidade, Vontade, Impulsividade e Livre Arbítrio</cite>. <a href="../index.html">Conheça o projeto →</a></p>
+  </section>
+
+</div>
+
+<!-- Config + helper do Supabase + banco de casos do júri. Ordem importa.
+     Tudo local — sem CDN. -->
+<script src="lib/supabase-config.js"></script>
+<script src="lib/supabase.js"></script>
+<script src="lib/juri-data.js"></script>
+
+<script>
+"use strict";
+
+/* =========================================================================
+   BANCO DE CASOS — fonte única em lib/juri-data.js (a atividade e o painel
+   consomem o mesmo arquivo). Aqui só reaproveitamos.
+   ========================================================================= */
+const VEREDITOS   = window.JURI_DATA.VEREDITOS;
+const PERGUNTA_VEREDITO = window.JURI_DATA.PERGUNTA_VEREDITO;
+const CAPACIDADES = window.JURI_DATA.CAPACIDADES;
+const CASOS       = window.JURI_DATA.CASOS;
+const TOTAL = CASOS.length;
+
+/* =========================================================================
+   ESTADO
+   ========================================================================= */
+/* Código da sessão: sem default silencioso; vem do campo (obrigatório) ou de
+   ?sessao= na URL (prefill). Normalizado para MAIÚSCULAS (casa com o painel). */
+const SESSAO_URL = (new URLSearchParams(location.search).get("sessao") || "").trim().toUpperCase();
+
+const estado = { sessao:"", grupo:"", idx:0, respostas:[], _capTmp:undefined, _verTmp:undefined };
+// respostas[i] = { caso_id, capacidade, veredito, justif }  (justif fica só local)
+
+/* =========================================================================
+   PERSISTÊNCIA LOCAL + ENVIO INCREMENTAL  (mesmo padrão do continuum)
+   Cada caso concluído: (1) salva o estado no localStorage por (sessao+grupo),
+   para retomar; (2) envia o payload CUMULATIVO via upsert (fire-and-forget).
+   Em falha, guarda pendência e um timer reenviará. A justificativa NÃO é
+   enviada ao painel (fica no aparelho, para o debate do grupo).
+   ========================================================================= */
+const ATIVIDADE = "juri"; // discriminador na tabela (casa com o painel)
+function chaveEstado(s,g){ return `juri:estado:${s}:${g}`; }
+function chavePendente(s,g){ return `juri:pendente:${s}:${g}`; }
+
+function lerEstadoSalvo(s,g){
+  try { return JSON.parse(localStorage.getItem(chaveEstado(s,g)) || "null"); }
+  catch(e){ return null; }
+}
+function salvarLocal(){
+  try {
+    localStorage.setItem(chaveEstado(estado.sessao, estado.grupo), JSON.stringify({
+      sessao:estado.sessao, grupo:estado.grupo, idx:estado.idx, respostas:estado.respostas
+    }));
+  } catch(e){ /* localStorage indisponível: ignora, não quebra a UI */ }
+}
+function limparLocal(s,g){
+  try { localStorage.removeItem(chaveEstado(s,g)); localStorage.removeItem(chavePendente(s,g)); }
+  catch(e){ /* idem */ }
+}
+
+/* Payload CUMULATIVO: só os casos concluídos (com veredito). pontuacao = null
+   (o júri não pontua). A justificativa textual NÃO entra no payload. */
+function montarPayload(){
+  const vereditos = estado.respostas
+    .filter(r => r && typeof r.veredito === "string")
+    .map(r => ({ caso_id:r.caso_id, capacidade:r.capacidade, veredito:r.veredito }));
+  return { sessao:estado.sessao, atividade:ATIVIDADE, grupo:estado.grupo, pontuacao:null, dados:{ vereditos } };
+}
+
+let syncPendente = false;
+let reenvioTimer = null;
+
+function refletirSync(){
+  const el = document.getElementById("syncMsg");
+  if (!el) return;
+  if (syncPendente){
+    el.className = "small sync-msg erro";
+    el.textContent = "Respostas salvas neste aparelho. Sem conexão com a turma — tentando reenviar…";
+  } else {
+    el.className = "small sync-msg ok";
+    el.textContent = "✓ Respostas salvas automaticamente.";
+  }
+}
+function guardarPendente(payload){
+  syncPendente = true;
+  try { localStorage.setItem(chavePendente(estado.sessao, estado.grupo), JSON.stringify(payload)); } catch(e){}
+  agendarReenvio();
+}
+function limparPendente(){
+  syncPendente = false;
+  try { localStorage.removeItem(chavePendente(estado.sessao, estado.grupo)); } catch(e){}
+}
+function lerPendente(){
+  try { return JSON.parse(localStorage.getItem(chavePendente(estado.sessao, estado.grupo)) || "null"); }
+  catch(e){ return null; }
+}
+function agendarReenvio(){
+  if (reenvioTimer) return;
+  reenvioTimer = setInterval(async ()=>{
+    const pend = lerPendente();
+    if (!pend){ clearInterval(reenvioTimer); reenvioTimer = null; return; }
+    if (!(window.SB && SB.configValida())) return;
+    try {
+      const r = await SB.enviarResultado(pend);
+      if (r.ok){ limparPendente(); clearInterval(reenvioTimer); reenvioTimer = null; refletirSync(); }
+    } catch(e){ /* segue tentando no próximo tick */ }
+  }, 8000);
+}
+async function enviar(payload){
+  try {
+    if (!(window.SB && SB.configValida())){ guardarPendente(payload); return; }
+    const r = await SB.enviarResultado(payload);
+    if (r.ok) limparPendente(); else guardarPendente(payload);
+  } catch(e){ guardarPendente(payload); }
+  refletirSync();
+}
+function salvarProgresso(){
+  salvarLocal();
+  enviar(montarPayload());
+}
+
+/* =========================================================================
+   NAVEGAÇÃO ENTRE TELAS
+   ========================================================================= */
+function show(sectionId){
+  document.querySelectorAll(".wrap > .step").forEach(s=>s.classList.remove("active"));
+  document.getElementById(sectionId).classList.add("active");
+  window.scrollTo({top:0, behavior:"smooth"});
+}
+function showSub(id){
+  ["stepDelib","stepReveal"].forEach(s=>document.getElementById(s).classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+}
+
+/* =========================================================================
+   FLUXO
+   ========================================================================= */
+if (SESSAO_URL) document.getElementById("sessao").value = SESSAO_URL;
+
+document.getElementById("startBtn").addEventListener("click", ()=>{
+  const sErro = document.getElementById("sessaoErro");
+  const gErro = document.getElementById("grupoErro");
+  const s = document.getElementById("sessao").value.trim().toUpperCase();
+  if (!s) {
+    sErro.textContent = "Digite o código da sessão (o professor projeta na tela).";
+    sErro.style.display = "block"; return;
+  }
+  sErro.style.display = "none";
+
+  const g = document.getElementById("grupo").value.trim();
+  if (!g) {
+    gErro.textContent = "Digite o nome do grupo para começar.";
+    gErro.style.display = "block"; return;
+  }
+  if (!/^[A-Za-z0-9_-]+$/.test(g)) {
+    gErro.textContent = "Use apenas letras (sem acento), números, hífen ou underline — sem espaços, acentos ou ç.";
+    gErro.style.display = "block"; return;
+  }
+  gErro.style.display = "none";
+
+  // Retomar progresso salvo deste (sessao+grupo). concluidos = casos com veredito.
+  const salvo = lerEstadoSalvo(s, g);
+  const concluidos = salvo && Array.isArray(salvo.respostas)
+    ? salvo.respostas.filter(r => r && typeof r.veredito === "string").length : 0;
+
+  if (concluidos >= TOTAL &&
+      confirm(`O júri "${g}" já concluiu nesta sessão. Ver a síntese? (Cancelar recomeça do zero.)`)){
+    Object.assign(estado, { sessao:s, grupo:g, respostas:salvo.respostas.slice(0,TOTAL), idx:TOTAL });
+    montarSintese(); show("synth"); return;
+  }
+  if (concluidos > 0 && concluidos < TOTAL &&
+      confirm(`Há progresso salvo do júri "${g}" (caso ${concluidos+1} de ${TOTAL}). Retomar de onde parou? (Cancelar recomeça do zero.)`)){
+    Object.assign(estado, { sessao:s, grupo:g, respostas:salvo.respostas.slice(0,concluidos), idx:concluidos });
+    show("loop"); carregarCaso(); return;
+  }
+
+  if (salvo) limparLocal(s, g);
+  Object.assign(estado, { sessao:s, grupo:g, idx:0, respostas:[] });
+  syncPendente = false;
+  show("loop"); carregarCaso();
+});
+document.getElementById("grupo").addEventListener("input", ()=>{
+  document.getElementById("grupoErro").style.display = "none";
+});
+document.getElementById("sessao").addEventListener("input", ()=>{
+  document.getElementById("sessaoErro").style.display = "none";
+});
+
+/* ---- render de um grupo de opções (capacidade ou veredito) ---- */
+function renderOpts(box, dict, getCurrent, onPick){
+  box.innerHTML = "";
+  Object.keys(dict).forEach(k=>{
+    const o = dict[k];
+    const b = document.createElement("button");
+    b.className = "opt" + (getCurrent() === k ? " sel" : "");
+    b.dataset.k = k;
+    b.innerHTML = `<b>${o.label}</b>` + (o.desc ? `<span>${o.desc}</span>` : "");
+    b.addEventListener("click", ()=>{
+      onPick(k);
+      box.querySelectorAll(".opt").forEach(x=>x.classList.toggle("sel", x.dataset.k===k));
+      validar();
+    });
+    box.appendChild(b);
+  });
+}
+
+function carregarCaso(){
+  const c = CASOS[estado.idx];
+  document.getElementById("caseCounter").textContent = `Caso ${estado.idx+1} de ${TOTAL}`;
+  document.getElementById("progressBar").style.width = (estado.idx/TOTAL*100)+"%";
+  document.getElementById("caseVinheta").textContent = c.fatos;
+
+  // Pergunta 1 (comum a todos)
+  document.getElementById("q1Label").textContent = window.JURI_DATA.PERGUNTA_CAPACIDADE;
+  renderOpts(document.getElementById("capBox"), CAPACIDADES, ()=>estado._capTmp, k=>{ estado._capTmp = k; });
+
+  // Caso civil: nota fixa antes da Pergunta 2
+  const nota = document.getElementById("notaCivil");
+  if (c.corte === "civil"){ nota.textContent = window.JURI_DATA.NOTA_CIVIL; nota.classList.remove("hidden"); }
+  else { nota.textContent = ""; nota.classList.add("hidden"); }
+
+  // Pergunta 2 (conjunto conforme a corte do caso)
+  document.getElementById("q2Label").textContent = PERGUNTA_VEREDITO[c.corte];
+  renderOpts(document.getElementById("verBox"), VEREDITOS[c.corte], ()=>estado._verTmp, k=>{ estado._verTmp = k; });
+
+  // reset
+  estado._capTmp = undefined; estado._verTmp = undefined;
+  document.getElementById("justif").value = "";
+  document.getElementById("revealBtn").disabled = true;
+
+  showSub("stepDelib");
+}
+
+function validar(){
+  const ok = !!estado._capTmp && !!estado._verTmp &&
+             document.getElementById("justif").value.trim().length > 0;
+  document.getElementById("revealBtn").disabled = !ok;
+}
+document.getElementById("justif").addEventListener("input", validar);
+
+document.getElementById("revealBtn").addEventListener("click", ()=>{
+  const c = CASOS[estado.idx];
+  estado.respostas[estado.idx] = {
+    caso_id: c.id,
+    capacidade: estado._capTmp,
+    veredito: estado._verTmp,
+    justif: document.getElementById("justif").value.trim()
+  };
+
+  document.getElementById("revWho").textContent = c.quem;
+  document.getElementById("revNota").textContent = window.JURI_DATA.NOTA_REVELACAO;
+  document.getElementById("revReal").textContent = c.real;
+  document.getElementById("revJogo").textContent = c.jogo;
+  document.getElementById("revComplica").textContent = c.complica;
+  document.getElementById("revFonte").textContent = c.fonte;
+  document.getElementById("revLink").href = c.caso_completo;
+
+  document.getElementById("nextBtn").textContent =
+    (estado.idx >= TOTAL-1) ? "Ver a síntese →" : "Próximo caso →";
+
+  salvarProgresso(); // caso concluído → salva local + envia estado cumulativo (upsert)
+  showSub("stepReveal");
+});
+
+document.getElementById("nextBtn").addEventListener("click", ()=>{
+  estado.idx++;
+  if (estado.idx >= TOTAL){ montarSintese(); show("synth"); }
+  else carregarCaso();
+});
+
+/* =========================================================================
+   SÍNTESE
+   ========================================================================= */
+function montarSintese(){
+  document.getElementById("progressBar").style.width = "100%";
+  document.getElementById("synthGroup").textContent = estado.grupo;
+
+  const list = document.getElementById("synthList"); list.innerHTML = "";
+  estado.respostas.forEach((r,i)=>{
+    const c = CASOS[i];
+    const capLabel = (CAPACIDADES[r.capacidade] || {}).label || "—";
+    const verLabel = ((VEREDITOS[c.corte] || {})[r.veredito] || {}).label || "—";
+    const div = document.createElement("div"); div.className = "item";
+    div.innerHTML = `<b>${i+1}. ${c.quem}</b>` +
+      `<br><span class="small muted">Capacidade comprometida: ${capLabel}</span>` +
+      `<br><span class="small">Veredito: <b>${verLabel}</b></span>` +
+      `<br><span class="small">“${r.justif}”</span>`;
+    list.appendChild(div);
+  });
+
+  refletirSync();   // estado otimista; enviar() corrige se falhar
+  salvarProgresso();
+}
+
+/* =========================================================================
+   REFAZER — recomeça o MESMO grupo/sessão (confirma; ato destrutivo local).
+   Não apaga no servidor (anon sem DELETE); o upsert sobrescreve a linha do
+   grupo no próximo envio. Limpa só o progresso LOCAL.
+   ========================================================================= */
+document.getElementById("restartBtn").addEventListener("click", ()=>{
+  if (!confirm("Isto recomeça do zero. Tem certeza?")) return;
+  limparLocal(estado.sessao, estado.grupo);
+  if (reenvioTimer){ clearInterval(reenvioTimer); reenvioTimer = null; }
+  syncPendente = false;
+  estado.idx = 0; estado.respostas = []; estado._capTmp = undefined; estado._verTmp = undefined;
+  carregarCaso(); show("loop");
+});
+</script>
+</body>
+</html>
