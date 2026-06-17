@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atividade 1 — O Continuum: Flexibilidade ↔ Determinação</title>
+
+<!-- =========================================================================
+     ATIVIDADE 1 — O CONTINUUM (Flexibilidade ↔ Determinação)
+     App self-contained, sem dependências externas (sem CDN), orientado a dados.
+     Identidade visual herdada do tema editorial do livro (paper + laranja queimado).
+     Pensado para 1 dispositivo por grupo (toque). Tudo client-side, sem backend.
+     A função registrarResultado() é a ÚNICA costura para um futuro Supabase.
+     ========================================================================= -->
+
+<style>
+/* ---- Fontes self-hosted (mesmas do livro). Fallbacks se abertas fora do site. ---- */
+@font-face { font-family:"Playfair Display"; src:url("../fonts/PlayfairDisplay-Regular.woff2") format("woff2"); font-weight:400; font-display:swap; }
+@font-face { font-family:"Playfair Display"; src:url("../fonts/PlayfairDisplay-Italic.woff2") format("woff2"); font-weight:400; font-style:italic; font-display:swap; }
+@font-face { font-family:"Playfair Display"; src:url("../fonts/PlayfairDisplay-Bold.woff2") format("woff2"); font-weight:700; font-display:swap; }
+@font-face { font-family:"Inter"; src:url("../fonts/Inter-Regular.woff2") format("woff2"); font-weight:400; font-display:swap; }
+@font-face { font-family:"Inter"; src:url("../fonts/Inter-Medium.woff2") format("woff2"); font-weight:500; font-display:swap; }
+@font-face { font-family:"Inter"; src:url("../fonts/Inter-SemiBold.woff2") format("woff2"); font-weight:600; font-display:swap; }
+@font-face { font-family:"JetBrains Mono"; src:url("../fonts/JetBrainsMono-Regular.woff2") format("woff2"); font-weight:400; font-display:swap; }
+
+:root{
+  --paper:#F9F9F7; --paper-content:#ffffff; --sidebar-bg:#f2f2ee;
+  --border-color:#e5e5e0; --border-soft:#dcdcd8;
+  --text-primary:#1a1a1a; --text-body:#333; --text-secondary:#444; --text-muted:#888;
+  --brand:#b45309; --brand-dark:#92400e; --brand-soft:rgba(180,83,9,.08); --brand-line:rgba(180,83,9,.20);
+  --ok:#2f7d4f; --ok-soft:rgba(47,125,79,.10);
+  --warn:#b07a14; --warn-soft:rgba(176,122,20,.12);
+  --font-sans:"Inter",ui-sans-serif,system-ui,sans-serif;
+  --font-serif:"Playfair Display",Georgia,"Times New Roman",serif;
+  --font-mono:"JetBrains Mono",ui-monospace,monospace;
+}
+
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--paper); color:var(--text-body);
+  font-family:var(--font-sans); line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:780px; margin:0 auto; padding:24px 18px 80px}
+
+h1,h2,h3{font-family:var(--font-serif); font-weight:700; color:var(--text-primary); line-height:1.15; margin:0 0 .4em}
+h1{font-size:1.7rem} h2{font-size:1.3rem} h3{font-size:1.05rem}
+p{margin:0 0 1em}
+.muted{color:var(--text-muted)} .small{font-size:.86rem}
+.kicker{font-family:var(--font-mono); font-size:.72rem; letter-spacing:.08em; text-transform:uppercase; color:var(--brand); margin-bottom:.5em}
+
+/* ---- Cartões / blocos ---- */
+.card{background:var(--paper-content); border:1px solid var(--border-color); border-radius:4px; padding:22px; box-shadow:0 1px 2px rgba(0,0,0,.03)}
+.vinheta{font-size:1.06rem; line-height:1.7; color:var(--text-secondary); border-left:3px solid var(--brand-line); padding-left:16px; margin:.2em 0 0}
+
+/* ---- Botões ---- */
+.btn{font-family:var(--font-sans); font-size:.95rem; font-weight:600; cursor:pointer;
+  border:1px solid var(--brand); background:var(--brand); color:#fff; padding:11px 20px; border-radius:3px; transition:background .15s}
+.btn:hover{background:var(--brand-dark); border-color:var(--brand-dark)}
+.btn:disabled{opacity:.4; cursor:not-allowed}
+.btn.ghost{background:transparent; color:var(--brand)}
+.btn.ghost:hover{background:var(--brand-soft)}
+.row{display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-top:18px}
+.row.end{justify-content:flex-end}
+
+/* ---- Opções de classificação ---- */
+.options{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:6px}
+@media(max-width:540px){ .options{grid-template-columns:1fr} }
+.opt{text-align:left; border:1px solid var(--border-color); background:var(--paper-content); border-radius:4px;
+  padding:13px 14px; cursor:pointer; font-family:var(--font-sans); font-size:.93rem; color:var(--text-primary); transition:border-color .12s, background .12s}
+.opt:hover{border-color:var(--brand); background:var(--brand-soft)}
+.opt b{display:block; font-weight:600; margin-bottom:2px}
+.opt span{font-size:.8rem; color:var(--text-muted)}
+.opt:disabled{cursor:default}
+.opt.sel{border-color:var(--brand); background:var(--brand-soft)}
+.opt.correct{border-color:var(--ok); background:var(--ok-soft)}
+.opt.wrong{border-color:#c44; background:rgba(204,68,68,.08)}
+
+/* ---- Feedback ---- */
+.feedback{margin-top:16px; padding:14px 16px; border-radius:4px; font-size:.92rem; display:none}
+.feedback.show{display:block}
+.feedback.ok{background:var(--ok-soft); border:1px solid var(--ok)}
+.feedback.near{background:var(--warn-soft); border:1px solid var(--warn)}
+.feedback.no{background:rgba(204,68,68,.08); border:1px solid #c44}
+.feedback .tag{font-family:var(--font-mono); font-size:.72rem; text-transform:uppercase; letter-spacing:.06em; display:block; margin-bottom:4px}
+
+/* ---- Eixo ---- */
+.axis-wrap{margin:24px 0 6px; user-select:none}
+.axis-labels{display:flex; justify-content:space-between; font-size:.78rem; color:var(--text-muted); margin-bottom:8px}
+.axis-labels b{display:block; color:var(--text-secondary); font-size:.84rem}
+.axis{position:relative; height:64px; cursor:pointer; touch-action:none}
+.axis-line{position:absolute; top:32px; left:0; right:0; height:3px; background:linear-gradient(90deg,#cfe0d4,#e9d9c0,#e6c5a6)}
+.axis-ticks{position:absolute; top:28px; left:0; right:0; height:11px}
+.tick{position:absolute; width:1px; height:11px; background:var(--border-soft)}
+.zone{position:absolute; top:24px; height:19px; background:var(--brand-soft); border-left:2px dashed var(--brand-line); border-right:2px dashed var(--brand-line); display:none}
+.marker{position:absolute; top:18px; width:18px; height:18px; margin-left:-9px; border-radius:50%;
+  background:var(--brand); border:2px solid #fff; box-shadow:0 1px 4px rgba(0,0,0,.25); display:none}
+.marker.show,.zone.show{display:block}
+.axis-hint{font-size:.8rem; color:var(--text-muted); margin-top:6px; text-align:center}
+.valbubble{position:absolute; top:-2px; transform:translateX(-50%); font-family:var(--font-mono); font-size:.72rem; color:var(--brand); display:none}
+.valbubble.show{display:block}
+
+textarea{width:100%; font-family:var(--font-sans); font-size:.95rem; padding:11px 12px; border:1px solid var(--border-color);
+  border-radius:4px; resize:vertical; min-height:64px; color:var(--text-primary); background:var(--paper-content)}
+textarea:focus{outline:none; border-color:var(--brand)}
+input[type=text]{width:100%; font-family:var(--font-sans); font-size:1rem; padding:11px 12px; border:1px solid var(--border-color); border-radius:4px}
+input[type=text]:focus{outline:none; border-color:var(--brand)}
+label.lbl{display:block; font-size:.84rem; font-weight:600; color:var(--text-secondary); margin:14px 0 6px}
+
+/* ---- Reveal ---- */
+.reveal{margin-top:18px; padding:16px 18px; border:1px solid var(--brand-line); border-radius:4px; background:#fffdfa; display:none}
+.reveal.show{display:block}
+.reveal .who{font-family:var(--font-serif); font-size:1.1rem; font-weight:700; color:var(--text-primary); margin-bottom:6px}
+.reveal .lab{font-family:var(--font-mono); font-size:.7rem; text-transform:uppercase; letter-spacing:.06em; color:var(--brand); margin-top:12px}
+.reveal .contra{font-style:italic; color:var(--text-secondary)}
+
+/* ---- Progresso / topo ---- */
+.topbar{display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; font-size:.82rem; color:var(--text-muted)}
+.progress{height:5px; background:var(--border-color); border-radius:3px; overflow:hidden; margin-bottom:22px}
+.progress > i{display:block; height:100%; background:var(--brand); width:0; transition:width .3s}
+.score{font-family:var(--font-mono); color:var(--brand); font-weight:500}
+
+/* ---- Síntese ---- */
+.badge{display:inline-block; font-family:var(--font-mono); font-size:.8rem; padding:6px 12px; border:1px solid var(--brand); color:var(--brand); border-radius:20px; margin:4px 0}
+.synth-axis .marker{display:block; width:14px; height:14px; margin-left:-7px; top:21px}
+.synth-axis .mlabel{position:absolute; top:40px; transform:translateX(-50%); font-size:.66rem; color:var(--text-muted); white-space:nowrap}
+.synth-list{margin-top:18px; border-top:1px solid var(--border-color)}
+.synth-list .item{border-bottom:1px solid var(--border-color); padding:12px 0}
+.synth-list .item b{font-family:var(--font-serif)}
+.hidden{display:none !important}
+.step{display:none} .step.active{display:block; animation:fade .25s ease}
+@keyframes fade{from{opacity:0; transform:translateY(4px)} to{opacity:1; transform:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ============ ENTRADA ============ -->
+  <section id="intro" class="step active">
+    <div class="kicker">Atividade 1 · Discussão em grupo</div>
+    <h1>O Continuum: Flexibilidade ↔ Determinação</h1>
+    <p>Ao longo do livro defendemos que há um <b>continuum</b> entre o cérebro flexível — que preserva muitos graus de liberdade — e a patologia, em que circuitos perturbados tornam o comportamento rígido, compelido, <i>determinado</i>. Nesta atividade, vocês vão colocar casos reais sobre esse eixo e defender suas escolhas.</p>
+    <div class="card">
+      <p class="small muted" style="margin-bottom:14px">Trabalhem em grupo, num só aparelho. Para cada caso vocês vão: <b>(1)</b> classificar a natureza da alteração, <b>(2)</b> posicioná-la no eixo e justificar, e <b>(3)</b> conferir quem era o caso e o melhor contra-argumento.</p>
+      <label class="lbl" for="grupo">Nome ou número do grupo</label>
+      <input type="text" id="grupo" placeholder="Ex.: Mesa 3 / Os Frontais" autocomplete="off">
+      <div class="row">
+        <button class="btn" id="startBtn">Começar</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ LOOP DE CASOS ============ -->
+  <section id="loop" class="step">
+    <div class="topbar">
+      <span id="caseCounter">Caso 1 de 8</span>
+      <span class="score">Pontos: <span id="scoreVal">0</span></span>
+    </div>
+    <div class="progress"><i id="progressBar"></i></div>
+
+    <!-- passo A: ler + classificar -->
+    <div id="stepClassify" class="step">
+      <h2 id="caseTitle">Caso 1</h2>
+      <p class="vinheta" id="caseVinheta"></p>
+      <h3 style="margin-top:22px">Que tipo de alteração da vontade/ação é esta?</h3>
+      <div class="options" id="optionsBox"></div>
+      <div class="feedback" id="classFeedback"></div>
+      <div class="row end"><button class="btn hidden" id="toAxisBtn">Posicionar no eixo →</button></div>
+    </div>
+
+    <!-- passo B: posicionar + justificar -->
+    <div id="stepAxis" class="step">
+      <h3>Onde este caso fica no continuum?</h3>
+      <p class="small muted">Toquem na linha para marcar a posição do grupo.</p>
+      <div class="axis-wrap">
+        <div class="axis-labels">
+          <span><b>Flexibilidade preservada</b>muitos graus de liberdade</span>
+          <span style="text-align:right"><b>Determinação biológica</b>comportamento compelido</span>
+        </div>
+        <div class="axis" id="axisInput">
+          <div class="axis-line"></div>
+          <div class="axis-ticks" id="ticksInput"></div>
+          <div class="marker" id="markerInput"></div>
+          <div class="valbubble" id="valInput"></div>
+        </div>
+        <div class="axis-hint" id="axisHint">— toque para posicionar —</div>
+      </div>
+      <label class="lbl" for="justif">Por que aqui? (uma frase — vocês vão precisar defender isso)</label>
+      <textarea id="justif" placeholder="A posição não tem gabarito; o que conta é o argumento do grupo."></textarea>
+      <div class="row end"><button class="btn" id="revealBtn" disabled>Revelar →</button></div>
+    </div>
+
+    <!-- passo C: revelar -->
+    <div id="stepReveal" class="step">
+      <h3>O contraponto</h3>
+      <div class="reveal show" id="revealBox">
+        <div class="who" id="revWho"></div>
+        <div id="revWhere" class="small muted"></div>
+        <div class="lab">Faixa de referência — calculada pela IA Claude (não por especialistas nem pelo autor)</div>
+        <div class="axis-wrap">
+          <div class="axis" id="axisReveal" style="cursor:default">
+            <div class="axis-line"></div>
+            <div class="zone" id="zoneReveal"></div>
+            <div class="marker" id="markerReveal" style="background:#555"></div>
+          </div>
+          <div class="small muted" id="posCompare" style="text-align:center"></div>
+        </div>
+        <div class="lab">Reversibilidade</div>
+        <div class="small" id="revRev"></div>
+        <div class="lab">O melhor contra-argumento</div>
+        <p class="contra" id="revContra"></p>
+      </div>
+      <div class="row end"><button class="btn" id="nextBtn">Próximo caso →</button></div>
+    </div>
+  </section>
+
+  <!-- ============ SÍNTESE ============ -->
+  <section id="synth" class="step">
+    <div class="kicker">Fim da rodada</div>
+    <h1>Síntese do grupo</h1>
+    <p>Grupo <b id="synthGroup"></b> · classificação semiológica: <span class="score" id="synthScore"></span> de 80 pontos.</p>
+    <div id="synthBadge"></div>
+
+    <div class="card" style="margin-top:18px">
+      <h3>O eixo de vocês</h3>
+      <div class="axis-wrap synth-axis">
+        <div class="axis-labels">
+          <span><b>Flexibilidade</b></span><span style="text-align:right"><b>Determinação</b></span>
+        </div>
+        <div class="axis" id="axisSynth" style="cursor:default; height:70px">
+          <div class="axis-line"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:18px; background:var(--sidebar-bg)">
+      <h3>Para o debate de turma</h3>
+      <p class="small">Olhem o conjunto antes de discutir com a sala:</p>
+      <p class="small" style="margin-bottom:0">• Qual caso foi o <b>mais difícil</b> de posicionar?<br>• Em qual vocês <b>mais discordaram</b> entre si?<br>• Qual contra-argumento <b>mais abalou</b> a posição inicial de vocês?</p>
+    </div>
+
+    <div class="synth-list" id="synthList"></div>
+
+    <div class="row">
+      <button class="btn" id="registerBtn">Registrar resultado do grupo</button>
+      <button class="btn ghost" id="restartBtn">Refazer</button>
+    </div>
+    <p class="small muted" id="registerMsg" style="margin-top:10px"></p>
+  </section>
+
+</div>
+
+<!-- Config + helper do Supabase e banco de casos compartilhado.
+     Ordem importa: config define window.SUPABASE_CONFIG; supabase.js o lê;
+     continuum-data.js define window.CONTINUUM_DATA (consumido abaixo).
+     Carregar ANTES do script principal. Tudo local — sem CDN. -->
+<script src="lib/supabase-config.js"></script>
+<script src="lib/supabase.js"></script>
+<script src="lib/continuum-data.js"></script>
+
+<script>
+"use strict";
+
+/* =========================================================================
+   BANCO DE CASOS — fonte única em lib/continuum-data.js (DRY: a atividade e o
+   painel do professor consomem o mesmo arquivo). Aqui só reaproveitamos.
+   ========================================================================= */
+const CATEGORIAS = window.CONTINUUM_DATA.CATEGORIAS;
+const ADJ        = window.CONTINUUM_DATA.ADJ;
+const CASOS      = window.CONTINUUM_DATA.CASOS;
+
+const PONTOS_ACERTO = 10, PONTOS_QUASE = 5;
+const TOTAL = CASOS.length;
+
+/* =========================================================================
+   ESTADO
+   ========================================================================= */
+/* Sessão = código da turma/aula, lido de ?sessao= na URL (ex.:
+   01-continuum.html?sessao=psico-2026-1). Sem isso, usa o padrão da config.
+   É o que separa os envios de aulas diferentes no painel do professor. */
+const SESSAO = (new URLSearchParams(location.search).get("sessao") || "").trim()
+  || (window.SUPABASE_CONFIG && window.SUPABASE_CONFIG.sessaoPadrao)
+  || "aula";
+
+const estado = { sessao:SESSAO, grupo:"", idx:0, score:0, respostas:[] };
+// respostas[i] = {classif, acertou, posicao, justif}
+
+/* =========================================================================
+   HELPERS DE EIXO
+   ========================================================================= */
+function pctFromEvent(axisEl, clientX){
+  const r = axisEl.getBoundingClientRect();
+  let p = (clientX - r.left) / r.width * 100;
+  return Math.max(0, Math.min(100, Math.round(p)));
+}
+function renderTicks(el){
+  el.innerHTML = "";
+  for(let v=0; v<=100; v+=10){
+    const t=document.createElement("div"); t.className="tick"; t.style.left=v+"%"; el.appendChild(t);
+  }
+}
+
+/* =========================================================================
+   NAVEGAÇÃO ENTRE TELAS
+   ========================================================================= */
+function show(sectionId){
+  document.querySelectorAll(".wrap > .step").forEach(s=>s.classList.remove("active"));
+  document.getElementById(sectionId).classList.add("active");
+  window.scrollTo({top:0, behavior:"smooth"});
+}
+function showSub(id){
+  ["stepClassify","stepAxis","stepReveal"].forEach(s=>document.getElementById(s).classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+}
+
+/* =========================================================================
+   FLUXO
+   ========================================================================= */
+document.getElementById("startBtn").addEventListener("click", ()=>{
+  const g = document.getElementById("grupo").value.trim();
+  estado.grupo = g || "Grupo sem nome";
+  show("loop"); carregarCaso();
+});
+
+function carregarCaso(){
+  const c = CASOS[estado.idx];
+  document.getElementById("caseCounter").textContent = `Caso ${estado.idx+1} de ${TOTAL}`;
+  document.getElementById("progressBar").style.width = (estado.idx/TOTAL*100)+"%";
+  document.getElementById("scoreVal").textContent = estado.score;
+  document.getElementById("caseTitle").textContent = `Caso ${estado.idx+1}`;
+  document.getElementById("caseVinheta").textContent = c.vinheta;
+
+  // opções de classificação (embaralhadas para não decorar posição)
+  const box = document.getElementById("optionsBox"); box.innerHTML="";
+  const keys = Object.keys(CATEGORIAS).slice().sort(()=>Math.random()-.5);
+  keys.forEach(k=>{
+    const b=document.createElement("button"); b.className="opt"; b.dataset.k=k;
+    b.innerHTML=`<b>${CATEGORIAS[k].label}</b><span>${CATEGORIAS[k].desc}</span>`;
+    b.addEventListener("click", ()=>classificar(k));
+    box.appendChild(b);
+  });
+  const fb=document.getElementById("classFeedback"); fb.className="feedback"; fb.innerHTML="";
+  document.getElementById("toAxisBtn").classList.add("hidden");
+
+  // reset eixo
+  const mk=document.getElementById("markerInput"), vb=document.getElementById("valInput");
+  mk.classList.remove("show"); vb.classList.remove("show");
+  document.getElementById("axisHint").textContent="— toque para posicionar —";
+  document.getElementById("justif").value="";
+  document.getElementById("revealBtn").disabled=true;
+  renderTicks(document.getElementById("ticksInput"));
+
+  showSub("stepClassify");
+}
+
+function classificar(k){
+  const c = CASOS[estado.idx];
+  // trava opções
+  document.querySelectorAll("#optionsBox .opt").forEach(b=>{
+    b.disabled=true;
+    if(b.dataset.k===c.correta) b.classList.add("correct");
+    if(b.dataset.k===k && k!==c.correta) b.classList.add("wrong");
+  });
+
+  const fb=document.getElementById("classFeedback");
+  let acertou=false, classe, tag;
+  if(k===c.correta){ estado.score+=PONTOS_ACERTO; acertou=true; classe="ok"; tag=`✓ Certo · +${PONTOS_ACERTO}`; }
+  else if((ADJ[c.correta]||[]).includes(k)){ estado.score+=PONTOS_QUASE; classe="near"; tag=`≈ Quase · +${PONTOS_QUASE}`; }
+  else { classe="no"; tag="✕ Reveja"; }
+
+  fb.className="feedback show "+classe;
+  fb.innerHTML=`<span class="tag">${tag}</span>${c.explica}`;
+  document.getElementById("scoreVal").textContent=estado.score;
+  estado.respostas[estado.idx]={classif:k, acertou};
+  document.getElementById("toAxisBtn").classList.remove("hidden");
+}
+
+document.getElementById("toAxisBtn").addEventListener("click", ()=>showSub("stepAxis"));
+
+/* ---- posicionamento no eixo (toque/clique) ---- */
+const axisInput=document.getElementById("axisInput");
+function placeMarker(clientX){
+  const p=pctFromEvent(axisInput, clientX);
+  const mk=document.getElementById("markerInput"), vb=document.getElementById("valInput");
+  mk.style.left=p+"%"; mk.classList.add("show");
+  vb.style.left=p+"%"; vb.textContent=p; vb.classList.add("show");
+  document.getElementById("axisHint").textContent="Podem reposicionar tocando de novo.";
+  estado._posTmp=p;
+  validarAxis();
+}
+axisInput.addEventListener("click", e=>placeMarker(e.clientX));
+axisInput.addEventListener("touchstart", e=>{ if(e.touches[0]) placeMarker(e.touches[0].clientX); }, {passive:true});
+document.getElementById("justif").addEventListener("input", validarAxis);
+function validarAxis(){
+  const ok = (typeof estado._posTmp==="number") && document.getElementById("justif").value.trim().length>0;
+  document.getElementById("revealBtn").disabled=!ok;
+}
+
+document.getElementById("revealBtn").addEventListener("click", ()=>{
+  const c=CASOS[estado.idx];
+  const r=estado.respostas[estado.idx];
+  r.posicao=estado._posTmp; r.justif=document.getElementById("justif").value.trim();
+  estado._posTmp=undefined;
+
+  document.getElementById("revWho").textContent=c.quem;
+  document.getElementById("revWhere").textContent=c.onde;
+  document.getElementById("revRev").textContent=c.reversibilidade;
+  document.getElementById("revContra").textContent=c.contra;
+
+  // eixo do reveal: zona + marcador do grupo
+  const zone=document.getElementById("zoneReveal"), mk=document.getElementById("markerReveal");
+  zone.style.left=c.min+"%"; zone.style.width=(c.max-c.min)+"%"; zone.classList.add("show");
+  mk.style.left=r.posicao+"%"; mk.classList.add("show");
+  const dentro = r.posicao>=c.min && r.posicao<=c.max;
+  document.getElementById("posCompare").textContent =
+    `Vocês marcaram ${r.posicao}. Faixa de referência calculada pela IA Claude: ${c.min}–${c.max} (não há gabarito). ` +
+    (dentro ? "Caíram dentro da faixa — agora defendam o porquê." : "Caíram fora — ótimo: discordar com bom argumento vale mais do que acertar a faixa.");
+
+  showSub("stepReveal");
+});
+
+document.getElementById("nextBtn").addEventListener("click", ()=>{
+  estado.idx++;
+  if(estado.idx>=TOTAL){ montarSintese(); show("synth"); }
+  else carregarCaso();
+});
+
+/* =========================================================================
+   SÍNTESE
+   ========================================================================= */
+function montarSintese(){
+  document.getElementById("progressBar").style.width="100%";
+  document.getElementById("synthGroup").textContent=estado.grupo;
+  document.getElementById("synthScore").textContent=estado.score;
+
+  // medalha
+  let titulo;
+  if(estado.score>=70) titulo="Mestre da semiologia da vontade";
+  else if(estado.score>=45) titulo="Semiólogo da vontade";
+  else titulo="Aprendiz da vontade";
+  document.getElementById("synthBadge").innerHTML=`<span class="badge">${titulo}</span>`;
+
+  // eixo coletivo do grupo
+  const ax=document.getElementById("axisSynth");
+  ax.querySelectorAll(".marker,.mlabel").forEach(n=>n.remove());
+  estado.respostas.forEach((r,i)=>{
+    const m=document.createElement("div"); m.className="marker show"; m.style.left=r.posicao+"%";
+    m.title=`Caso ${i+1}: ${CASOS[i].quem}`;
+    const l=document.createElement("div"); l.className="mlabel"; l.style.left=r.posicao+"%"; l.textContent=(i+1);
+    ax.appendChild(m); ax.appendChild(l);
+  });
+
+  // lista detalhada
+  const list=document.getElementById("synthList"); list.innerHTML="";
+  estado.respostas.forEach((r,i)=>{
+    const c=CASOS[i];
+    const div=document.createElement("div"); div.className="item";
+    div.innerHTML=`<b>${i+1}. ${c.quem}</b> — sua posição <b>${r.posicao}</b> (faixa de referência ${c.min}–${c.max})`+
+      `<br><span class="small muted">Classificação: ${r.acertou?"✓":"✕"} ${CATEGORIAS[c.correta].label}</span>`+
+      `<br><span class="small">“${r.justif}”</span>`;
+    list.appendChild(div);
+  });
+}
+
+/* =========================================================================
+   ENVIO AO BACKEND (Supabase).
+   montarPayload() monta SÓ as colunas que existem na tabela
+   respostas_continuum: sessao, grupo, pontuacao, casos. O carimbo de tempo
+   fica a cargo do servidor (coluna criado_em default now()) — por isso NÃO
+   enviamos um campo "quando" no topo (PostgREST rejeitaria coluna inexistente).
+   O instante de cada caso, se preciso, já vai dentro de casos[].
+   ========================================================================= */
+function montarPayload(){
+  return {
+    sessao: estado.sessao,
+    grupo: estado.grupo,
+    pontuacao: estado.score,
+    casos: estado.respostas.map((r,i)=>({
+      caso:i+1, caso_id:CASOS[i].id, classificacao:r.classif,
+      acertou:r.acertou, posicao:r.posicao, justificativa:r.justif
+    }))
+  };
+}
+
+/* Envia ao Supabase com FALLBACK GRACIOSO: se a config for placeholder ou o
+   POST falhar, mantém o comportamento offline (console.log) e avisa que salvou
+   só local. A atividade NUNCA pode quebrar por causa do backend → try/catch. */
+async function registrarResultado(payload){
+  if (!(window.SB && SB.configValida())) {
+    console.log("[registrarResultado] backend desligado — payload local:", payload);
+    return { ok:false, erro:"config-invalida" };
+  }
+  try {
+    const r = await SB.enviarResultado(payload);
+    if (!r.ok) console.log("[registrarResultado] falha no envio — payload local:", payload, r.erro);
+    return r;
+  } catch (e) {
+    console.log("[registrarResultado] erro inesperado — payload local:", payload, e);
+    return { ok:false, erro:String(e) };
+  }
+}
+
+document.getElementById("registerBtn").addEventListener("click", async ()=>{
+  const btn = document.getElementById("registerBtn");
+  const msg = document.getElementById("registerMsg");
+  btn.disabled = true;
+  msg.textContent = "Enviando…";
+  const r = await registrarResultado(montarPayload());
+  if (r.ok) {
+    msg.textContent =
+      `Resultado do grupo "${estado.grupo}" enviado (${estado.score} pts). ` +
+      `Já aparece no painel da turma.`;
+  } else {
+    btn.disabled = false; // permite tentar de novo se foi falha de rede
+    msg.textContent =
+      `Resultado do grupo "${estado.grupo}" salvo só neste aparelho (${estado.score} pts) — ` +
+      `o envio à turma não funcionou. Mostrem este eixo quando forem chamados.`;
+  }
+});
+
+document.getElementById("restartBtn").addEventListener("click", ()=>{
+  estado.idx=0; estado.score=0; estado.respostas=[]; estado._posTmp=undefined;
+  document.getElementById("registerMsg").textContent="";
+  document.getElementById("registerBtn").disabled=false; // reabilita após envio
+  carregarCaso(); show("loop");
+});
+</script>
+</body>
+</html>

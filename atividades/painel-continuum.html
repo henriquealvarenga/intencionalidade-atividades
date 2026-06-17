@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Painel do professor — Continuum: Flexibilidade ↔ Determinação</title>
+
+<!-- =========================================================================
+     PAINEL DO PROFESSOR — agregação ao vivo da Atividade 1 (Continuum).
+     Projeção no telão: tipografia grande, alto contraste, responsivo.
+     Lê as respostas da sessão via Supabase REST (polling 4s, sem websockets).
+     Identidade visual herdada do tema editorial (paper + laranja queimado).
+     Metadados dos 8 casos vêm de lib/continuum-data.js (mesma fonte da
+     atividade) — sem duplicar nome/min/max aqui.
+     ========================================================================= -->
+
+<style>
+/* ---- Fontes self-hosted (mesmas do livro). ---- */
+@font-face { font-family:"Playfair Display"; src:url("../fonts/PlayfairDisplay-Regular.woff2") format("woff2"); font-weight:400; font-display:swap; }
+@font-face { font-family:"Playfair Display"; src:url("../fonts/PlayfairDisplay-Bold.woff2") format("woff2"); font-weight:700; font-display:swap; }
+@font-face { font-family:"Inter"; src:url("../fonts/Inter-Regular.woff2") format("woff2"); font-weight:400; font-display:swap; }
+@font-face { font-family:"Inter"; src:url("../fonts/Inter-Medium.woff2") format("woff2"); font-weight:500; font-display:swap; }
+@font-face { font-family:"Inter"; src:url("../fonts/Inter-SemiBold.woff2") format("woff2"); font-weight:600; font-display:swap; }
+@font-face { font-family:"JetBrains Mono"; src:url("../fonts/JetBrainsMono-Regular.woff2") format("woff2"); font-weight:400; font-display:swap; }
+
+:root{
+  --paper:#F9F9F7; --paper-content:#ffffff; --sidebar-bg:#f2f2ee;
+  --border-color:#e5e5e0; --border-soft:#dcdcd8;
+  --text-primary:#1a1a1a; --text-body:#333; --text-secondary:#444; --text-muted:#888;
+  --brand:#b45309; --brand-dark:#92400e; --brand-soft:rgba(180,83,9,.08); --brand-line:rgba(180,83,9,.22);
+  --live:#2f7d4f; --live-soft:rgba(47,125,79,.12);
+  --font-sans:"Inter",ui-sans-serif,system-ui,sans-serif;
+  --font-serif:"Playfair Display",Georgia,"Times New Roman",serif;
+  --font-mono:"JetBrains Mono",ui-monospace,monospace;
+}
+
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--paper); color:var(--text-body);
+  font-family:var(--font-sans); line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+  font-size:18px; /* base maior — leitura à distância */
+}
+.wrap{max-width:1200px; margin:0 auto; padding:24px 22px 80px}
+
+h1{font-family:var(--font-serif); font-weight:700; color:var(--text-primary); line-height:1.1; margin:0 0 .15em; font-size:2.2rem}
+.kicker{font-family:var(--font-mono); font-size:.8rem; letter-spacing:.08em; text-transform:uppercase; color:var(--brand); margin-bottom:.4em}
+.muted{color:var(--text-muted)} .small{font-size:.85rem}
+
+/* ---- Barra de controle / status ---- */
+.bar{display:flex; flex-wrap:wrap; gap:16px 22px; align-items:flex-end; justify-content:space-between;
+  background:var(--paper-content); border:1px solid var(--border-color); border-radius:6px;
+  padding:18px 20px; margin:18px 0 24px}
+.field{display:flex; flex-direction:column; gap:6px}
+.field label{font-size:.8rem; font-weight:600; color:var(--text-secondary); text-transform:uppercase; letter-spacing:.04em}
+.field input{font-family:var(--font-mono); font-size:1.1rem; padding:9px 12px; border:1px solid var(--border-color);
+  border-radius:4px; min-width:240px; color:var(--text-primary); background:var(--paper-content)}
+.field input:focus{outline:none; border-color:var(--brand)}
+.status{display:flex; flex-wrap:wrap; gap:8px 20px; align-items:center; font-size:1rem}
+.live{display:inline-flex; align-items:center; gap:8px; font-weight:600; color:var(--live);
+  background:var(--live-soft); padding:6px 12px; border-radius:20px}
+.live .dot{width:11px; height:11px; border-radius:50%; background:var(--live); animation:pulse 1.6s ease-in-out infinite}
+.live.off{color:var(--text-muted); background:var(--border-color)}
+.live.off .dot{background:var(--text-muted); animation:none}
+@keyframes pulse{0%,100%{opacity:1; transform:scale(1)} 50%{opacity:.35; transform:scale(.7)}}
+.count{font-family:var(--font-mono); color:var(--brand); font-weight:600; font-size:1.15rem}
+.btn{font-family:var(--font-sans); font-size:1rem; font-weight:600; cursor:pointer;
+  border:1px solid var(--brand); background:var(--brand); color:#fff; padding:10px 18px; border-radius:4px; transition:background .15s}
+.btn:hover{background:var(--brand-dark); border-color:var(--brand-dark)}
+.btn.ghost{background:transparent; color:var(--brand)}
+.btn.ghost:hover{background:var(--brand-soft)}
+
+.notice{background:var(--brand-soft); border:1px solid var(--brand-line); border-radius:6px;
+  padding:16px 18px; margin:18px 0; color:var(--text-secondary)}
+
+/* ---- Legenda de grupos (cor ↔ nome) ---- */
+.legend{display:flex; flex-wrap:wrap; gap:8px 16px; margin:0 0 22px}
+.legend .g{display:inline-flex; align-items:center; gap:8px; font-size:1rem; font-weight:500}
+.legend .swatch{width:16px; height:16px; border-radius:50%; border:2px solid #fff; box-shadow:0 0 0 1px var(--border-soft)}
+
+/* ---- Casos / eixos ---- */
+.cases{display:grid; grid-template-columns:1fr; gap:14px}
+@media(min-width:900px){ .cases{grid-template-columns:1fr 1fr} }
+.case{background:var(--paper-content); border:1px solid var(--border-color); border-radius:6px; padding:18px 20px}
+.case h2{font-family:var(--font-serif); font-size:1.25rem; font-weight:700; color:var(--text-primary); margin:0 0 4px; line-height:1.2}
+.case .num{font-family:var(--font-mono); color:var(--brand); font-size:.9rem}
+.poles{display:flex; justify-content:space-between; font-size:.78rem; color:var(--text-muted); margin:14px 0 6px}
+.poles b{color:var(--text-secondary)}
+.axis{position:relative; height:64px; margin-bottom:4px}
+.axis-line{position:absolute; top:30px; left:0; right:0; height:4px; border-radius:2px;
+  background:linear-gradient(90deg,#cfe0d4,#e9d9c0,#e6c5a6)}
+.zone{position:absolute; top:22px; height:20px; background:var(--brand-soft);
+  border-left:2px dashed var(--brand-line); border-right:2px dashed var(--brand-line)}
+.gmark{position:absolute; width:18px; height:18px; margin-left:-9px; border-radius:50%;
+  border:2px solid #fff; box-shadow:0 1px 3px rgba(0,0,0,.3)}
+.refnote{font-size:.78rem; color:var(--text-muted); text-align:center}
+.empty{font-size:.9rem; color:var(--text-muted); text-align:center; padding:14px 0}
+
+/* ---- Placar ---- */
+.scoreboard{background:var(--paper-content); border:1px solid var(--border-color); border-radius:6px; padding:18px 20px; margin-top:26px}
+.scoreboard h2{font-family:var(--font-serif); font-size:1.5rem; margin:0 0 14px}
+.score-row{display:flex; align-items:center; gap:14px; padding:10px 0; border-bottom:1px solid var(--border-color); font-size:1.15rem}
+.score-row:last-child{border-bottom:none}
+.score-row .rank{font-family:var(--font-mono); color:var(--text-muted); width:2.2em; text-align:right; font-size:1rem}
+.score-row .swatch{width:16px; height:16px; border-radius:50%; flex:0 0 auto; border:2px solid #fff; box-shadow:0 0 0 1px var(--border-soft)}
+.score-row .name{flex:1 1 auto; font-weight:600; color:var(--text-primary)}
+.score-row .pts{font-family:var(--font-mono); color:var(--brand); font-weight:600}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="kicker">Atividade 1 · Painel do professor</div>
+  <h1>O Continuum, ao vivo</h1>
+  <p class="muted">Onde cada grupo colocou os casos no eixo <b>Flexibilidade ↔ Determinação</b>.</p>
+
+  <div class="bar">
+    <div class="field">
+      <label for="sessaoInput">Código da sessão</label>
+      <input type="text" id="sessaoInput" autocomplete="off" placeholder="ex.: psico-2026-1">
+    </div>
+    <div class="status">
+      <span class="live off" id="liveTag"><span class="dot"></span><span id="liveText">parado</span></span>
+      <span><span class="count" id="grupoCount">0</span> grupo(s)</span>
+      <span class="muted small" id="lastUpdate">—</span>
+      <button class="btn ghost" id="refreshBtn">Atualizar agora</button>
+    </div>
+  </div>
+
+  <div class="notice" id="notice" style="display:none"></div>
+
+  <div class="legend" id="legend"></div>
+
+  <div class="cases" id="cases"></div>
+
+  <div class="scoreboard" id="scoreboardWrap" style="display:none">
+    <h2>Placar dos grupos</h2>
+    <div id="scoreboard"></div>
+  </div>
+
+</div>
+
+<!-- Config + helper + banco de casos compartilhado. Ordem importa. Sem CDN. -->
+<script src="lib/supabase-config.js"></script>
+<script src="lib/supabase.js"></script>
+<script src="lib/continuum-data.js"></script>
+
+<script>
+"use strict";
+
+const CASOS = window.CONTINUUM_DATA.CASOS;
+
+/* Paleta de cores distintas para os grupos (legíveis sobre paper). Atribuída
+   na ordem do placar, de modo que legenda, marcadores e placar concordem.
+   Cicla se houver mais grupos que cores. */
+const PALETA = ["#b45309","#2f6db4","#2f7d4f","#9b2f8f","#b0331f",
+                "#1f8f96","#8f6b1f","#5a4fb4","#b42f6b","#4a4a4a"];
+
+const POLL_MS = 4000;
+const $ = id => document.getElementById(id);
+
+let sessao = "";
+let timer = null;
+
+/* ---- Sessão inicial: ?sessao= da URL, senão o padrão da config ---- */
+function sessaoInicial(){
+  const url = (new URLSearchParams(location.search).get("sessao") || "").trim();
+  if (url) return url;
+  return (window.SUPABASE_CONFIG && window.SUPABASE_CONFIG.sessaoPadrao) || "";
+}
+
+/* ---- Indicador "ao vivo" ---- */
+function setLive(on, texto){
+  const tag = $("liveTag");
+  tag.classList.toggle("off", !on);
+  $("liveText").textContent = texto;
+}
+
+/* ---- Dedup: um grupo pode reenviar; fica o envio mais recente.
+        Os dados já chegam ordenados por criado_em asc → o último sobrescreve. */
+function porGrupo(rows){
+  const m = new Map();
+  rows.forEach(r => m.set(r.grupo, r));
+  return Array.from(m.values());
+}
+
+/* ---- Posição de um grupo num caso específico (ou null) ---- */
+function posicaoNoCaso(row, casoId){
+  const arr = Array.isArray(row.casos) ? row.casos : [];
+  // casa por caso_id; cai para o número sequencial se preciso
+  const e = arr.find(c => c.caso_id === casoId) || arr.find(c => c.caso === casoId);
+  return (e && typeof e.posicao === "number") ? e.posicao : null;
+}
+
+/* ---- Render principal ---- */
+function render(rows){
+  const grupos = porGrupo(rows);
+
+  // ordena por pontuação desc (depois nome) → define cor estável de cada grupo
+  grupos.sort((a,b) => (b.pontuacao||0) - (a.pontuacao||0) || String(a.grupo).localeCompare(b.grupo));
+  const cor = new Map();
+  grupos.forEach((g,i) => cor.set(g.grupo, PALETA[i % PALETA.length]));
+
+  $("grupoCount").textContent = grupos.length;
+
+  // legenda
+  $("legend").innerHTML = grupos.map(g =>
+    `<span class="g"><span class="swatch" style="background:${cor.get(g.grupo)}"></span>${esc(g.grupo)}</span>`
+  ).join("");
+
+  // um eixo por caso
+  $("cases").innerHTML = CASOS.map(c => {
+    const zona = `<div class="zone" style="left:${c.min}%; width:${c.max - c.min}%"></div>`;
+    const marcadores = grupos.map(g => {
+      const p = posicaoNoCaso(g, c.id);
+      if (p === null) return "";
+      // leve escalonamento vertical para reduzir sobreposição entre grupos
+      const top = 22 + (grupos.indexOf(g) % 3) * 9;
+      return `<div class="gmark" title="${esc(g.grupo)}: ${p}" `+
+             `style="left:${p}%; top:${top - 4}px; background:${cor.get(g.grupo)}"></div>`;
+    }).join("");
+    const algum = grupos.some(g => posicaoNoCaso(g, c.id) !== null);
+    return `<div class="case">
+      <div class="num">Caso ${c.id}</div>
+      <h2>${esc(c.quem)}</h2>
+      <div class="poles"><span><b>Flexibilidade</b> · 0</span><span>100 · <b>Determinação</b></span></div>
+      <div class="axis">
+        <div class="axis-line"></div>
+        ${zona}
+        ${marcadores}
+      </div>
+      ${algum ? `<div class="refnote">Faixa de referência ${c.min}–${c.max}</div>`
+              : `<div class="empty">— sem respostas ainda —</div>`}
+    </div>`;
+  }).join("");
+
+  // placar
+  const sb = $("scoreboardWrap");
+  if (grupos.length){
+    sb.style.display = "";
+    $("scoreboard").innerHTML = grupos.map((g,i) =>
+      `<div class="score-row">
+        <span class="rank">${i+1}.</span>
+        <span class="swatch" style="background:${cor.get(g.grupo)}"></span>
+        <span class="name">${esc(g.grupo)}</span>
+        <span class="pts">${g.pontuacao == null ? "—" : g.pontuacao} pts</span>
+      </div>`
+    ).join("");
+  } else {
+    sb.style.display = "none";
+  }
+}
+
+function esc(s){
+  return String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]));
+}
+
+/* ---- Hora local HH:MM:SS para "última atualização" ---- */
+function agora(){
+  const d = new Date();
+  const p = n => String(n).padStart(2,"0");
+  return `${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
+}
+
+/* ---- Ciclo de atualização ---- */
+async function atualizar(){
+  if (!sessao){ setLive(false, "informe a sessão"); return; }
+  const rows = await SB.consultarSessao(sessao);
+  render(rows);
+  $("lastUpdate").textContent = "última atualização " + agora();
+  setLive(true, "ao vivo");
+}
+
+function iniciarPolling(){
+  if (timer) clearInterval(timer);
+  atualizar();
+  timer = setInterval(atualizar, POLL_MS);
+}
+
+/* ---- Boot ---- */
+(function init(){
+  if (!(window.SB && SB.configValida())){
+    $("notice").style.display = "";
+    $("notice").innerHTML = "Backend não configurado (chave/URL ainda são placeholders em " +
+      "<code>lib/supabase-config.js</code>). O painel não tem dados para mostrar.";
+    setLive(false, "sem backend");
+    return;
+  }
+  sessao = sessaoInicial();
+  $("sessaoInput").value = sessao;
+
+  $("sessaoInput").addEventListener("change", () => {
+    sessao = $("sessaoInput").value.trim();
+    iniciarPolling();
+  });
+  $("refreshBtn").addEventListener("click", atualizar);
+
+  iniciarPolling();
+})();
+</script>
+</body>
+</html>
