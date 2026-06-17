@@ -74,6 +74,14 @@ h1{font-family:var(--font-serif); font-weight:700; color:var(--text-primary); li
 .notice{background:var(--brand-soft); border:1px solid var(--brand-line); border-radius:6px;
   padding:16px 18px; margin:18px 0; color:var(--text-secondary)}
 
+/* ---- Código da sessão (projetado para os alunos digitarem) ---- */
+.codebox{background:var(--paper-content); border:1px solid var(--border-color); border-radius:6px;
+  padding:22px 24px; margin:18px 0 4px; text-align:center}
+.codebox .instr{font-size:1.05rem; color:var(--text-secondary); margin:0 0 10px}
+.codebox .instr b{color:var(--text-primary)}
+.code-big{font-family:var(--font-mono); font-weight:600; color:var(--brand);
+  font-size:clamp(3rem, 12vw, 6rem); letter-spacing:.12em; line-height:1; margin:6px 0 16px}
+
 /* ---- Legenda de grupos (cor ↔ nome) ---- */
 .legend{display:flex; flex-wrap:wrap; gap:8px 16px; margin:0 0 22px}
 .legend .g{display:inline-flex; align-items:center; gap:8px; font-size:1rem; font-weight:500}
@@ -115,10 +123,19 @@ h1{font-family:var(--font-serif); font-weight:700; color:var(--text-primary); li
   <h1>O Continuum, ao vivo</h1>
   <p class="muted">Onde cada grupo colocou os casos no eixo <b>Flexibilidade ↔ Determinação</b>.</p>
 
+  <!-- Código da sessão: gerado ao carregar (ver script), travado em localStorage
+       e refletido em ?sessao= na URL. Os alunos digitam este código na atividade. -->
+  <div class="codebox">
+    <p class="instr">Para entrar na atividade, os alunos acessam<br>
+      <b>henriquealvarenga.com/intencionalidade</b> → <b>Atividades</b> → <b>Continuum</b> e digitam o código:</p>
+    <div class="code-big" id="codigoBig">—</div>
+    <button class="btn ghost" id="novoCodigoBtn">Novo código</button>
+  </div>
+
   <div class="bar">
     <div class="field">
-      <label for="sessaoInput">Código da sessão</label>
-      <input type="text" id="sessaoInput" autocomplete="off" placeholder="ex.: psico-2026-1">
+      <label for="sessaoInput">Código da sessão (override manual)</label>
+      <input type="text" id="sessaoInput" autocomplete="off" autocapitalize="characters" placeholder="código gerado acima">
     </div>
     <div class="status">
       <span class="live off" id="liveTag"><span class="dot"></span><span id="liveText">parado</span></span>
@@ -163,11 +180,44 @@ const $ = id => document.getElementById(id);
 let sessao = "";
 let timer = null;
 
-/* ---- Sessão inicial: ?sessao= da URL, senão o padrão da config ---- */
+/* ---- Código da sessão ----------------------------------------------------
+   Gerado AQUI no painel (sem QR). Alfabeto sem caracteres ambíguos (0/O, 1/I/L)
+   para evitar erro de digitação na projeção. O código é TRAVADO: persiste em
+   localStorage e é refletido em ?sessao= na URL, então um reload não troca o
+   código. "Novo código" regera (confirmando, pois desconecta quem já entrou).
+   O campo de texto segue editável como override manual. */
+const STORE_KEY = "continuum-painel-sessao";
+const ALFABETO = "ABCDEFGHJKMNPQRSTUVWXYZ23456789"; // sem 0 O 1 I L
+const CODIGO_LEN = 5;
+
+function gerarCodigo(){
+  let s = "";
+  for (let i = 0; i < CODIGO_LEN; i++){
+    s += ALFABETO[Math.floor(Math.random() * ALFABETO.length)];
+  }
+  return s;
+}
+
+/* Origem do código ao abrir: URL > localStorage > gera um novo. */
 function sessaoInicial(){
-  const url = (new URLSearchParams(location.search).get("sessao") || "").trim();
+  const url = (new URLSearchParams(location.search).get("sessao") || "").trim().toUpperCase();
   if (url) return url;
-  return (window.SUPABASE_CONFIG && window.SUPABASE_CONFIG.sessaoPadrao) || "";
+  const salvo = (localStorage.getItem(STORE_KEY) || "").trim().toUpperCase();
+  if (salvo) return salvo;
+  return gerarCodigo();
+}
+
+/* Fixa o código vigente em todo lugar: variável, localStorage, ?sessao= na URL
+   (sem recarregar), campo e display grande — e reinicia o polling na sessão. */
+function fixarSessao(novo){
+  sessao = (novo || "").trim().toUpperCase();
+  try { localStorage.setItem(STORE_KEY, sessao); } catch (e) { /* storage indisponível: segue só na URL */ }
+  const u = new URL(location.href);
+  u.searchParams.set("sessao", sessao);
+  history.replaceState(null, "", u);
+  $("sessaoInput").value = sessao;
+  $("codigoBig").textContent = sessao || "—";
+  iniciarPolling();
 }
 
 /* ---- Indicador "ao vivo" ---- */
@@ -287,16 +337,18 @@ function iniciarPolling(){
     setLive(false, "sem backend");
     return;
   }
-  sessao = sessaoInicial();
-  $("sessaoInput").value = sessao;
-
+  // Campo editável = override manual; normaliza e fixa como o código vigente.
   $("sessaoInput").addEventListener("change", () => {
-    sessao = $("sessaoInput").value.trim();
-    iniciarPolling();
+    fixarSessao($("sessaoInput").value);
+  });
+  // "Novo código": confirma (desconecta grupos já ligados ao código atual).
+  $("novoCodigoBtn").addEventListener("click", () => {
+    if (!confirm("Gerar um novo código? Os grupos que já entraram com o código atual deixarão de aparecer aqui.")) return;
+    fixarSessao(gerarCodigo());
   });
   $("refreshBtn").addEventListener("click", atualizar);
 
-  iniciarPolling();
+  fixarSessao(sessaoInicial()); // trava o código e dispara o polling
 })();
 </script>
 </body>
