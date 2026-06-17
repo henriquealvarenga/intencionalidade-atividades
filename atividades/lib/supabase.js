@@ -52,20 +52,24 @@
     return cfg.url + "/rest/v1/" + cfg.table;
   }
 
-  /* Envia o resultado de um grupo (INSERT).
+  /* Envia o resultado de um grupo (UPSERT por (sessao, grupo)).
      payload deve trazer só colunas existentes na tabela: sessao, grupo,
-     pontuacao, casos. Retorna {ok:true} ou {ok:false, erro}. Nunca lança:
-     quem chama trata o ok=false como "salvou só local". */
+     pontuacao, casos. O envio é incremental: a atividade chama a cada caso
+     concluído com o estado CUMULATIVO. on_conflict=sessao,grupo +
+     resolution=merge-duplicates fazem o servidor sobrescrever a linha do grupo
+     (exige o índice único respostas_continuum_sessao_grupo_uidx — ver setup.sql)
+     em vez de criar duplicatas. Retorna {ok:true} ou {ok:false, erro}. Nunca
+     lança: quem chama trata o ok=false como "salvou só local". */
   async function enviarResultado(payload) {
     if (!configValida()) {
       return { ok: false, erro: "config-invalida" };
     }
     try {
-      var resp = await fetch(endpoint(), {
+      var resp = await fetch(endpoint() + "?on_conflict=sessao,grupo", {
         method: "POST",
         headers: headers({
           "Content-Type": "application/json",
-          "Prefer": "return=minimal"
+          "Prefer": "resolution=merge-duplicates,return=minimal"
         }),
         body: JSON.stringify(payload)
       });
