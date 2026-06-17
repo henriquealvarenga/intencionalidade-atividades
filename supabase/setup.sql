@@ -49,9 +49,32 @@ drop policy if exists "anon_update_continuum" on public.respostas_continuum;
 create policy "anon_update_continuum" on public.respostas_continuum
   for update to anon using (true) with check (true);
 
+-- 4) Faxina automática (pg_cron): apaga respostas com mais de 30 dias.
+--    Os dados são efêmeros e não-pessoais; sem isso o banco só cresce. Roda todo
+--    dia às 04:00 UTC (~01:00 BRT, fora de aula). Idempotente: reagenda o job.
+--    Requer a extensão pg_cron (disponível no Supabase). criado_em é definido no
+--    INSERT e NÃO muda no upsert, então marca a 1ª criação da linha do grupo.
+create extension if not exists pg_cron;
+
+do $$
+begin
+  if exists (select 1 from cron.job where jobname = 'faxina_respostas_continuum') then
+    perform cron.unschedule('faxina_respostas_continuum');
+  end if;
+end $$;
+
+select cron.schedule(
+  'faxina_respostas_continuum',
+  '0 4 * * *',
+  $cmd$delete from public.respostas_continuum where criado_em < now() - interval '30 days'$cmd$
+);
+
 -- =============================================================================
--- Limpeza opcional após a aula (descomente e rode quando quiser zerar):
---   delete from public.respostas_continuum where sessao = 'psico-2026-1';
--- ou tudo:
+-- Limpeza manual após a aula (a faxina automática só age aos 30 dias).
+-- Para ver os códigos existentes:
+--   select distinct sessao from public.respostas_continuum;
+-- Apagar UMA sessão (código em MAIÚSCULAS, ex.: o que o painel gerou):
+--   delete from public.respostas_continuum where sessao = 'JTU96';
+-- Apagar tudo:
 --   truncate public.respostas_continuum;
 -- =============================================================================
