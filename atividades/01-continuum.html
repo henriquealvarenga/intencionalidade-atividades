@@ -341,13 +341,15 @@ function limparLocal(s,g){
 }
 
 /* Monta o payload CUMULATIVO: só os casos JÁ concluídos (que passaram pelo
-   reveal e portanto têm posicao numérica). Só colunas que existem na tabela. */
+   reveal e portanto têm posicao numérica). Colunas da tabela única `respostas`:
+   o payload específico desta atividade vai em `dados` (aqui, { casos }). */
+const ATIVIDADE = "continuum"; // discriminador na tabela (casa com o painel)
 function montarPayload(){
   const casos = estado.respostas.map((r,i)=>({
     caso:i+1, caso_id:CASOS[i].id, classificacao:r.classif,
     acertou:r.acertou, posicao:r.posicao, justificativa:r.justif
   })).filter(c => typeof c.posicao === "number");
-  return { sessao:estado.sessao, grupo:estado.grupo, pontuacao:estado.score, casos };
+  return { sessao:estado.sessao, atividade:ATIVIDADE, grupo:estado.grupo, pontuacao:estado.score, dados:{ casos } };
 }
 
 let syncPendente = false;   // há payload aguardando reenvio?
