@@ -115,6 +115,24 @@ h1{font-family:var(--font-serif); font-weight:700; color:var(--text-primary); li
   <h1>Atividades, ao vivo</h1>
   <p class="muted">Acompanhe as respostas dos grupos em tempo real.</p>
 
+  <!-- Portão de login (Supabase Auth, magic link). Só some quando autenticado;
+       painel-auth.js libera o #painelMain. A proteção real é o RLS do banco. -->
+  <div id="authGate" hidden>
+    <div class="notice">
+      <h2 style="margin:0 0 8px; font-size:1.25rem; font-family:var(--font-serif)">Painel restrito ao professor</h2>
+      <p style="margin:0 0 12px">Entre com seu email para ver as respostas dos grupos. Você recebe um link de acesso por email (verifique o spam).</p>
+      <div class="field" style="max-width:380px">
+        <label for="authEmail">Seu email</label>
+        <input type="email" id="authEmail" autocomplete="email" placeholder="voce@exemplo.com">
+      </div>
+      <div style="margin-top:12px"><button class="btn" id="authSendBtn">Enviar link de acesso</button></div>
+      <p class="small muted" id="authMsg" style="margin-top:10px"></p>
+    </div>
+  </div>
+
+  <!-- Conteúdo do painel: oculto até o login (painel-auth.js o libera). -->
+  <div id="painelMain" hidden>
+
   <!-- Código da sessão: gerado ao carregar (painel-core.js), travado em
        localStorage e refletido em ?sessao= na URL. Alunos digitam este código. -->
   <div class="codebox">
@@ -137,6 +155,8 @@ h1{font-family:var(--font-serif); font-weight:700; color:var(--text-primary); li
       <span><span class="count" id="grupoCount">0</span> grupo(s)</span>
       <span class="muted small" id="lastUpdate">—</span>
       <button class="btn ghost" id="refreshBtn">Atualizar agora</button>
+      <span class="muted small" id="authWho"></span>
+      <button class="btn ghost" id="authSair">Sair</button>
     </div>
   </div>
 
@@ -152,6 +172,7 @@ h1{font-family:var(--font-serif); font-weight:700; color:var(--text-primary); li
     <div id="scoreboard"></div>
   </div>
 
+  </div><!-- /#painelMain -->
 </div>
 
 <!-- Ordem importa. Sem CDN.
@@ -160,6 +181,7 @@ h1{font-family:var(--font-serif); font-weight:700; color:var(--text-primary); li
      Acrescentar atividade = incluir os dois <script> dela aqui. -->
 <script src="lib/supabase-config.js"></script>
 <script src="lib/supabase.js"></script>
+<script src="lib/painel-auth.js"></script>
 <script src="lib/painel-core.js"></script>
 
 <!-- Atividade: Continuum -->

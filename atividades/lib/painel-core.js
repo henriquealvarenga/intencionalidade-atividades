@@ -196,15 +196,8 @@
     timer = setInterval(atualizar, POLL_MS);
   }
 
-  /* ---- Boot (após todos os <script> de módulo terem registrado) ---- */
-  function init(){
-    if (!(global.SB && SB.configValida())){
-      $("notice").style.display = "";
-      $("notice").innerHTML = "Backend não configurado (chave/URL ainda são placeholders em " +
-        "<code>lib/supabase-config.js</code>). O painel não tem dados para mostrar.";
-      setLive(false, "sem backend");
-      return;
-    }
+  /* ---- Boot do painel — roda SÓ após autenticado (ver painel-auth.js) ---- */
+  function bootPainel(){
     if (!registry.length){
       $("notice").style.display = "";
       $("notice").textContent = "Nenhuma atividade registrada (inclua os <script> da atividade em painel.html).";
@@ -226,6 +219,21 @@
     $("refreshBtn").addEventListener("click", atualizar);
 
     fixarSessao(sessaoInicial()); // trava o código e dispara o polling
+  }
+
+  /* ---- Entrada: valida config → portão de login → bootPainel ---- */
+  function init(){
+    if (!(global.SB && SB.configValida())){
+      $("painelMain").hidden = false; // mostra o aviso mesmo sem login
+      $("notice").style.display = "";
+      $("notice").innerHTML = "Backend não configurado (chave/URL ainda são placeholders em " +
+        "<code>lib/supabase-config.js</code>). O painel não tem dados para mostrar.";
+      setLive(false, "sem backend");
+      return;
+    }
+    // Login obrigatório: o portão libera bootPainel() só quando autenticado.
+    if (global.PAINEL_AUTH) PAINEL_AUTH.proteger(bootPainel);
+    else { $("painelMain").hidden = false; bootPainel(); } // sem auth: fallback aberto
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
