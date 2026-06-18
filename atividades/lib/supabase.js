@@ -59,27 +59,29 @@
     return cfg.url + "/rest/v1/" + cfg.table;
   }
 
-  /* Envia o resultado de um grupo (UPSERT por (sessao, atividade, grupo)).
-     payload deve trazer só colunas existentes na tabela: sessao, atividade,
-     grupo, pontuacao, dados (jsonb com o payload específico da atividade). O
-     envio é incremental: a atividade chama a cada passo concluído com o estado
-     CUMULATIVO. on_conflict=sessao,atividade,grupo + resolution=merge-duplicates
-     fazem o servidor sobrescrever a linha do grupo (exige o índice único
-     respostas_sessao_atividade_grupo_uidx — ver setup.sql) em vez de duplicar.
-     Retorna {ok:true} ou {ok:false, erro}. Nunca lança: quem chama trata o
-     ok=false como "salvou só local". */
+  /* Envia o resultado de um grupo via a RPC enviar_resposta (SECURITY DEFINER no
+     banco — ver setup.sql). A função faz o UPSERT por (sessao, atividade, grupo)
+     IGNORANDO o RLS, então o aluno (anônimo) ESCREVE sem precisar poder LER a
+     tabela: a leitura das respostas é exclusiva do professor logado. Isso resolve
+     a colisão do upsert direto, que exigia SELECT anônimo (= dados públicos).
+     payload: { sessao, atividade, grupo, pontuacao, dados }. Bearer = chave anon.
+     O envio é incremental (estado CUMULATIVO a cada passo). Retorna {ok:true} ou
+     {ok:false, erro}. Nunca lança: quem chama trata o ok=false como "salvou só local". */
   async function enviarResultado(payload) {
     if (!configValida()) {
       return { ok: false, erro: "config-invalida" };
     }
     try {
-      var resp = await fetch(endpoint() + "?on_conflict=sessao,atividade,grupo", {
+      var resp = await fetch(cfg.url + "/rest/v1/rpc/enviar_resposta", {
         method: "POST",
-        headers: headers({
-          "Content-Type": "application/json",
-          "Prefer": "resolution=merge-duplicates,return=minimal"
-        }),
-        body: JSON.stringify(payload)
+        headers: headers({ "Content-Type": "application/json" }),
+        body: JSON.stringify({
+          p_sessao: payload.sessao,
+          p_atividade: payload.atividade,
+          p_grupo: payload.grupo,
+          p_pontuacao: (payload.pontuacao == null ? null : payload.pontuacao),
+          p_dados: payload.dados
+        })
       });
       if (!resp.ok) {
         var texto = await resp.text().catch(function () { return ""; });

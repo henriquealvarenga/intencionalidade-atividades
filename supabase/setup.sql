@@ -31,33 +31,42 @@ create unique index if not exists respostas_sessao_atividade_grupo_uidx
 -- 2) Habilita Row Level Security
 alter table public.respostas enable row level security;
 
--- 3) Políticas para uso em sala (anônimo).
---    Escopo de sala de aula: a chave anon (pública) pode INSERIR (alunos enviando)
---    e LER (painel exibindo). Não há dados pessoais; os dados são efêmeros.
-drop policy if exists "anon_insert_respostas" on public.respostas;
-create policy "anon_insert_respostas" on public.respostas
-  for insert to anon with check (true);
+-- 3) Acesso: ESCRITA por RPC (alunos anônimos), LEITURA só pelo professor logado.
+--
+--    Por que RPC em vez de policy de escrita anônima: o envio é um UPSERT
+--    (on_conflict), e no Postgres o INSERT ... ON CONFLICT DO UPDATE exige policy
+--    de SELECT (ele lê a linha em conflito). Uma SELECT anônima "using(true)"
+--    sustentaria o upsert, MAS exporia TODAS as respostas a qualquer um com a
+--    chave anon (pública). Para esconder os dados sem quebrar o envio, os alunos
+--    gravam por uma função SECURITY DEFINER (escreve ignorando o RLS) e a tabela
+--    fica SEM nenhuma policy anônima. Leitura: só o email autorizado, autenticado.
 
---    LEITURA restrita ao PROFESSOR (login por email — ver atividades/lib/painel-auth.js).
---    O painel lê com o token do usuário autenticado; só o email autorizado enxerga
---    as respostas. Substitui a leitura anônima: a chave anon NÃO lê mais a tabela
---    (os alunos só ESCREVEM — insert/update acima). Trocar de professor = trocar o
---    email abaixo. (Rollout: aplique owner_select primeiro; só remova a leitura
---    anônima — drop anon_select_respostas — depois que o login estiver funcionando.)
+--    3a) Função de escrita (upsert) — SECURITY DEFINER. Trate-a como a única porta
+--        de escrita: valida só o suficiente e grava. search_path fixo (segurança).
+create or replace function public.enviar_resposta(
+  p_sessao text, p_atividade text, p_grupo text, p_pontuacao int, p_dados jsonb
+) returns void
+language sql security definer set search_path = public as $$
+  insert into public.respostas (sessao, atividade, grupo, pontuacao, dados)
+  values (p_sessao, p_atividade, p_grupo, p_pontuacao, p_dados)
+  on conflict (sessao, atividade, grupo)
+  do update set pontuacao = excluded.pontuacao, dados = excluded.dados;
+$$;
+revoke all on function public.enviar_resposta(text,text,text,int,jsonb) from public;
+grant execute on function public.enviar_resposta(text,text,text,int,jsonb) to anon, authenticated;
+
+--    3b) LEITURA restrita ao PROFESSOR (login por email — ver atividades/lib/painel-auth.js).
+--        O painel lê com o token do usuário autenticado; só o email autorizado
+--        enxerga as respostas. Trocar de professor = trocar o email abaixo.
+--        Sem policies anônimas: a chave anon não lê nem escreve a tabela direto
+--        (escreve só pela RPC acima).
+drop policy if exists "anon_insert_respostas" on public.respostas;
+drop policy if exists "anon_update_respostas" on public.respostas;
 drop policy if exists "anon_select_respostas" on public.respostas;
 drop policy if exists "owner_select_respostas" on public.respostas;
 create policy "owner_select_respostas" on public.respostas
   for select to authenticated
   using ( (auth.jwt() ->> 'email') = 'henriquealvarenga@gmail.com' );
-
---    UPDATE é NECESSÁRIO para o envio incremental: o upsert
---    (on_conflict=sessao,atividade,grupo + resolution=merge-duplicates) entra
---    pelo caminho ON CONFLICT DO UPDATE quando o grupo reenvia. Sem esta
---    política, a 2ª gravação falha com 42501 (RLS). Mesmo escopo de sala dos
---    demais (using/check = true): um grupo sobrescreve a própria linha.
-drop policy if exists "anon_update_respostas" on public.respostas;
-create policy "anon_update_respostas" on public.respostas
-  for update to anon using (true) with check (true);
 
 -- 4) Faxina automática (pg_cron): apaga respostas com mais de 30 dias.
 --    Os dados são efêmeros e não-pessoais; sem isso o banco só cresce. Roda todo
