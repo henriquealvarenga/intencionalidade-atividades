@@ -4,8 +4,8 @@
    (03-fenomenos.html) e pelo painel do professor (lib/painel-fenomenos.js).
 
    Guarda METADADOS e REVELAÇÃO — nunca o que o grupo digita. Texto de tela é
-   verbatim do FENOMENOS-textos.md; metadados (distratores, âncoras) da
-   SPEC-fenomenos.md §4. Todo item tem a MESMA forma: 4 opções, 1 correta.
+   verbatim do _specs/TEXT-fenomenos.md; metadados (distratores, âncoras) da
+   _specs/SPEC-fenomenos.md §4. Todo item tem a MESMA forma: 4 opções, 1 correta.
 
    `vinheta` e `fronteira` são HTML (preservam o negrito/itálico do texto-fonte;
    conteúdo estático confiável → renderizados via innerHTML na atividade). As

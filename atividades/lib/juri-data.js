@@ -4,7 +4,7 @@
    (02-juri.html) quanto pelo painel do professor (lib/painel-juri.js).
 
    Guarda METADADOS e REVELAÇÃO — nunca o que o grupo digita. Texto de tela é
-   verbatim do JURI-textos.md; metadados (corte, links, fontes) da SPEC-juri.md.
+   verbatim do _specs/TEXT-juri.md; metadados (corte, links, fontes) da _specs/SPEC-juri.md.
 
    Pergunta 1 (capacidade) é COMUM a todos os casos. Pergunta 2 (veredito) é
    escolhida pela marca `corte` de cada caso: 'criminal' (casos 1–3) ou 'civil'
@@ -15,7 +15,7 @@
   "use strict";
 
   /* Dois conjuntos de veredito, selecionados pela marca `corte` de cada caso.
-     label+desc = texto verbatim da opção na atividade (JURI-textos §4);
+     label+desc = texto verbatim da opção na atividade (_specs/TEXT-juri §4);
      curto = rótulo compacto para as barras do painel (telão). */
   var VEREDITOS = {
     criminal: {
@@ -31,7 +31,7 @@
     }
   };
 
-  /* Pergunta 2 (rótulo), por corte — verbatim JURI-textos §4. */
+  /* Pergunta 2 (rótulo), por corte — verbatim _specs/TEXT-juri §4. */
   var PERGUNTA_VEREDITO = {
     criminal: "Qual é o veredito do júri?",
     civil:    "A pessoa deve manter o direito de decidir sobre a própria vida?"
