@@ -58,7 +58,7 @@
       correta: "compulsivo",
       ancora: { cap: "17", titulo: "Obsessões e Compulsões" },
       vinheta: `Antes de dormir, uma paciente confere a tranca da porta repetidas vezes. Acha o ritual sem sentido e tenta resistir, mas a tensão cresce até que ela cede; ao conferir, sente um alívio passageiro.`,
-      enunciado: `A propriedade que distingue esse ato de um <b>ato impulsivo</b> é que, aqui, o ato:`,
+      enunciado: `O que caracteriza esse ato é:`,
       opcoes: [
         { chave: "compulsivo", label: "é egodistônico e alivia uma tensão crescente",
           comentario: `<b>Correta.</b> O ato é vivido como absurdo (egodistônico), há resistência e a execução <b>alivia a tensão</b> — é a tríade do <b>ato compulsivo</b> (Lewis, 1936: compulsão subjetiva, resistência e insight preservado).` },
@@ -77,8 +77,8 @@
       correta: "passividade",
       ancora: { cap: "12", titulo: "Perturbações do Eu" },
       glossario: GLOSSARIO,
-      vinheta: `Um paciente afirma que sua mão se ergue e gesticula "comandada por uma força de fora"; descreve-se como instrumento de uma vontade alheia. Não relata ter agido e se arrependido — diz que não foi ele quem agiu.`,
-      enunciado: `O elemento que define esse fenômeno e o separa de um <b>impulso patológico</b> comum é:`,
+      vinheta: `Um paciente afirma que sua mão se ergue e gesticula "comandada por uma força de fora"; descreve-se como instrumento de uma vontade alheia. Não diz "fiz e me arrependi", mas "não fui eu quem fez".`,
+      enunciado: `O que define esse fenômeno é:`,
       opcoes: [
         { chave: "passividade", label: "a perda do reconhecimento do ato como próprio",
           comentario: `<b>Correta.</b> A autoria é atribuída a uma força externa: a fronteira do Eu se rompe e funções próprias são vividas como do "não-eu". É a <b>vivência de influência</b> (no Sims, <i>experiência de passividade</i>; sintoma de 1ª ordem de Schneider).` },
@@ -158,7 +158,7 @@
       enunciado: `O mecanismo que <b>trava a ação</b> aqui é:`,
       opcoes: [
         { chave: "ambivalencia", label: "a coexistência de duas vontades opostas e simultâneas",
-          comentario: `<b>Correta.</b> Há vontade — na verdade <b>duas</b>, opostas e simultâneas, que se anulam: é a <b>vontade oscilante</b> (ambivalência / ambitendência), "objetivos contrastantes com oscilação na tomada de decisão".` },
+          comentario: `<b>Correta.</b> Há vontade — na verdade <b>duas</b>, opostas e simultâneas, que se anulam: é a <b>vontade oscilante</b> (ambivalência / ambitendência), "objetivos contrastantes com oscilação na tomada de decisão". Bleuler a descreveu como traço fundamental da esquizofrenia, embora não seja exclusiva dela.` },
         { chave: "abulia", label: "a abolição de toda iniciativa para agir",
           comentario: `Seria a <b>abulia</b>: ali não há vontade nenhuma. Aqui há duas — o problema é o conflito, não a ausência.` },
         { chave: "negativismo", label: "a oposição a uma ordem vinda de fora",
@@ -175,16 +175,16 @@
       ancora: { cap: "17", titulo: "Obsessões e Compulsões" },
       glossario: GLOSSARIO,
       vinheta: `Um paciente é tomado por pensamentos repetidos e indesejados de que pode ter contaminado a comida da família. Considera a ideia exagerada e improvável, sofre com ela e tenta afastá-la. Não há nenhum ato ritual.`,
-      enunciado: `Duas propriedades caracterizam esse fenômeno e o distinguem de uma ideia delirante e de uma compulsão. São elas:`,
+      enunciado: `Duas propriedades caracterizam esse fenômeno e o distinguem, respectivamente, de uma compulsão e de uma ideia delirante. São elas:`,
       opcoes: [
-        { chave: "obsessao", label: "é uma ideia (não um ato) e o juízo crítico está preservado",
-          comentario: `<b>Correta.</b> <b>Obsessão</b>: ideia intrusiva, com <b>crítica/insight preservado</b> e resistência. "A palavra obsessão é reservada para o pensamento; compulsão, para o ato."` },
-        { chave: "compulsao", label: "é um ato repetido que alivia a tensão",
-          comentario: `Descreve a <b>compulsão</b> (o ato). A vinheta é explícita: "não há nenhum ato ritual" — é só o pensamento.` },
-        { chave: "delirio", label: "é uma convicção sustentada sem qualquer crítica",
-          comentario: `Descreve a <b>ideia delirante</b>: falta justamente o que a vinheta mostra — o <b>juízo crítico</b> (ele acha a ideia improvável e sofre com ela).` },
-        { chave: "insercao", label: "é vivida como um pensamento imposto de fora",
-          comentario: `Descreveria a <b>inserção / passividade do pensamento</b> (autoria externa). O paciente reconhece os pensamentos como <b>seus</b> — apenas indesejados.` }
+        { chave: "obsessao", label: "ser uma ideia, e não um ato; e ter o juízo crítico preservado",
+          comentario: `<b>Correta.</b> As duas propriedades da <b>obsessão</b>: é uma <b>ideia</b> (não um ato — por isso não é compulsão) e o <b>juízo crítico/insight está preservado</b> (por isso não é delírio). "A palavra obsessão é reservada para o pensamento; compulsão, para o ato."` },
+        { chave: "ato_sem_critica", label: "ser um ato repetido que alivia a tensão; e ter o juízo crítico ausente",
+          comentario: `Erra os dois pontos: descreve um <b>ato</b> que alivia tensão (compulsão) e <b>sem crítica</b> (delírio) — o oposto da obsessão nos dois.` },
+        { chave: "ideia_sem_critica", label: "ser uma ideia, e não um ato; mas com a convicção sustentada sem crítica",
+          comentario: `Acerta a 1ª (é <b>ideia</b>, não ato — separa da compulsão), mas erra a 2ª: "sem crítica" descreve a <b>ideia delirante</b>. Na obsessão o juízo crítico é <b>preservado</b> — ele acha a ideia improvável e sofre com ela.` },
+        { chave: "ato_com_critica", label: "ser um ato ritual que alivia a tensão; mas com o juízo crítico preservado",
+          comentario: `Acerta a 2ª (<b>crítica preservada</b>), mas erra a 1ª: a vinheta diz que "não há nenhum ato ritual" — é só o pensamento. O ato que alivia tensão é a <b>compulsão</b>.` }
       ]
     },
 
@@ -212,14 +212,15 @@
       id: 9, formato: "assercao_razao", bonus: true, grupo: "Volição — arco do ato voluntário",
       correta: "A",
       ancora: { cap: "18", titulo: "Anseio, impulso e vontade e seus distúrbios" },
+      glossario: GLOSSARIO,
       asfundo: `Jaspers e Scharfetter descrevem o ato voluntário como uma sequência: <b>necessidade/anseio → impulso → vontade (decisão) → execução</b>.`,
-      assercao_I: `<b>I.</b> Na abulia, a ação não se realiza porque falha o impulso/iniciativa que daria <b>início</b> ao ato voluntário.`,
-      assercao_II: `<b>II.</b> O ato voluntário pode ser descrito como uma sequência (anseio → impulso → vontade → execução), e a abulia incide sobre o <b>começo</b> dessa sequência.`,
+      assercao_I: `<b>I.</b> Na <b>perturbação da iniciativa</b> (a <i>abulia</i> do roteiro), a ação não se realiza porque falha o impulso que daria <b>início</b> ao ato voluntário.`,
+      assercao_II: `<b>II.</b> O ato voluntário pode ser descrito como uma sequência (anseio → impulso → vontade → execução), e ela incide sobre o <b>começo</b> dessa sequência.`,
       comentarios: {
         A: `<b>Correta.</b> As duas são verdadeiras e a II <b>justifica</b> a I: localizar a falha no início da sequência (o impulso que deflagra) explica por que a ação não parte, embora a execução esteja intacta (estimulado, o paciente age). Contraste com a Q6: a <b>ambivalência</b> trava mais adiante, na <b>decisão</b>.`,
-        B: `As duas são verdadeiras, mas a relação não é solta: a II é exatamente a razão da I — o modelo sequencial explica <i>onde</i> a abulia atua.`,
+        B: `As duas são verdadeiras, mas a relação não é solta: a II é exatamente a razão da I — o modelo sequencial explica <i>onde</i> esse distúrbio atua.`,
         C: `A II não é falsa: a descrição do ato voluntário como sequência é a base (Jaspers/Scharfetter) que sustenta a I.`,
-        D: `A I não é falsa: na abulia a iniciativa de fato não deflagra a ação, sem bloqueio motor.`,
+        D: `A I não é falsa: a iniciativa de fato não deflagra a ação, sem bloqueio motor.`,
         E: `Ambas são verdadeiras — e articuladas entre si.`
       }
     },
@@ -231,7 +232,7 @@
       ancora: { cap: "12", titulo: "Perturbações do Eu" },
       glossario: GLOSSARIO,
       asfundo: `Retomando o eixo do Júri (Atv2): a responsabilidade supõe um <b>agente</b> que reconhece e governa os próprios atos.`,
-      assercao_I: `<b>I.</b> As experiências de passividade (vivência de influência) comprometem a vivência de <b>autoria</b> do ato e, por isso, podem repercutir no juízo sobre a responsabilidade do sujeito.`,
+      assercao_I: `<b>I.</b> As experiências de passividade comprometem a vivência de <b>autoria</b> do ato.`,
       assercao_II: `<b>II.</b> Nas experiências de passividade, o sujeito <b>reconhece o ato como seu</b>, mas não consegue controlá-lo.`,
       comentarios: {
         A: `A II não justifica a I porque a II é <b>falsa</b> (ver C).`,
