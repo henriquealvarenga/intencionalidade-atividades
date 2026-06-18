@@ -34,11 +34,18 @@
            !!cfg.table;
   }
 
-  /* Cabeçalhos comuns a toda chamada. apikey + Bearer usam a MESMA chave anon. */
-  function headers(extra) {
+  /* Token de usuário autenticado (login do painel, ver painel-auth.js). Quando
+     definido, é usado como Bearer nas LEITURAS (consultarSessao) — para o RLS
+     reconhecer o professor. Os envios dos alunos seguem na chave anon. */
+  var authToken = null;
+  function setAuthToken(t) { authToken = t || null; }
+
+  /* Cabeçalhos comuns. apikey é SEMPRE a chave anon (publishable); o Bearer pode
+     ser sobrescrito pelo token de usuário (bearer) — senão, também é a anon. */
+  function headers(extra, bearer) {
     var h = {
       "apikey": cfg.anonKey,
-      "Authorization": "Bearer " + cfg.anonKey
+      "Authorization": "Bearer " + (bearer || cfg.anonKey)
     };
     if (extra) {
       for (var k in extra) {
@@ -96,7 +103,7 @@
                "&order=criado_em.asc";
       var resp = await fetch(endpoint() + qs, {
         method: "GET",
-        headers: headers()
+        headers: headers(null, authToken) // leitura autenticada (token do professor)
       });
       if (!resp.ok) return [];
       var dados = await resp.json();
@@ -109,6 +116,7 @@
   global.SB = {
     configValida: configValida,
     enviarResultado: enviarResultado,
-    consultarSessao: consultarSessao
+    consultarSessao: consultarSessao,
+    setAuthToken: setAuthToken
   };
 })(window);
