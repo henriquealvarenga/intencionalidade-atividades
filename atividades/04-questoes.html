@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atividade 4 — Simulado: Questões Comentadas</title>
+
+<!-- =========================================================================
+     ATIVIDADE 4 — SIMULADO (Questões Comentadas)
+     App self-contained, sem dependências externas (sem CDN), orientado a dados.
+     Identidade visual herdada do tema editorial do livro (paper + laranja queimado).
+     Pensado para 1 dispositivo por grupo. Dois formatos: "melhor resposta" (1–8,
+     4 alternativas embaralhadas, +1) e "asserção-razão" (bônus 9–10, 5 opções
+     fixas A–E). Medalha sobre /8; bônus fora do denominador + menção de louvor.
+     Envio INCREMENTAL via RPC/upsert (atividade:"questoes"); o gabarito comentado
+     NÃO vai ao painel. Mesmo banco/lib das demais atividades.
+     ========================================================================= -->
+
+<style>
+/* ---- Fontes self-hosted (mesmas do livro). ---- */
+@font-face { font-family:"Playfair Display"; src:url("../fonts/PlayfairDisplay-Regular.woff2") format("woff2"); font-weight:400; font-display:swap; }
+@font-face { font-family:"Playfair Display"; src:url("../fonts/PlayfairDisplay-Italic.woff2") format("woff2"); font-weight:400; font-style:italic; font-display:swap; }
+@font-face { font-family:"Playfair Display"; src:url("../fonts/PlayfairDisplay-Bold.woff2") format("woff2"); font-weight:700; font-display:swap; }
+@font-face { font-family:"Inter"; src:url("../fonts/Inter-Regular.woff2") format("woff2"); font-weight:400; font-display:swap; }
+@font-face { font-family:"Inter"; src:url("../fonts/Inter-Medium.woff2") format("woff2"); font-weight:500; font-display:swap; }
+@font-face { font-family:"Inter"; src:url("../fonts/Inter-SemiBold.woff2") format("woff2"); font-weight:600; font-display:swap; }
+@font-face { font-family:"JetBrains Mono"; src:url("../fonts/JetBrainsMono-Regular.woff2") format("woff2"); font-weight:400; font-display:swap; }
+
+:root{
+  --paper:#F9F9F7; --paper-content:#ffffff; --sidebar-bg:#f2f2ee;
+  --border-color:#e5e5e0; --border-soft:#dcdcd8;
+  --text-primary:#1a1a1a; --text-body:#333; --text-secondary:#444; --text-muted:#888;
+  --brand:#b45309; --brand-dark:#92400e; --brand-soft:rgba(180,83,9,.08); --brand-line:rgba(180,83,9,.20);
+  --ok:#2f7d4f; --ok-soft:rgba(47,125,79,.10);
+  --warn:#b07a14; --warn-soft:rgba(176,122,20,.12);
+  --font-sans:"Inter",ui-sans-serif,system-ui,sans-serif;
+  --font-serif:"Playfair Display",Georgia,"Times New Roman",serif;
+  --font-mono:"JetBrains Mono",ui-monospace,monospace;
+}
+
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--paper); color:var(--text-body); font-family:var(--font-sans); line-height:1.6; -webkit-font-smoothing:antialiased}
+.wrap{max-width:780px; margin:0 auto; padding:24px 18px 80px}
+
+h1,h2,h3{font-family:var(--font-serif); font-weight:700; color:var(--text-primary); line-height:1.15; margin:0 0 .4em}
+h1{font-size:1.7rem} h2{font-size:1.3rem} h3{font-size:1.05rem}
+p{margin:0 0 1em}
+.muted{color:var(--text-muted)} .small{font-size:.86rem}
+.kicker{font-family:var(--font-mono); font-size:.72rem; letter-spacing:.08em; text-transform:uppercase; color:var(--brand); margin-bottom:.5em}
+
+.card{background:var(--paper-content); border:1px solid var(--border-color); border-radius:4px; padding:22px; box-shadow:0 1px 2px rgba(0,0,0,.03)}
+.vinheta{font-size:1.06rem; line-height:1.7; color:var(--text-secondary); border-left:3px solid var(--brand-line); padding-left:16px; margin:.2em 0 1em}
+.enunciado{font-weight:600; color:var(--text-primary); margin:0 0 .2em}
+
+.btn{font-family:var(--font-sans); font-size:.95rem; font-weight:600; cursor:pointer; border:1px solid var(--brand); background:var(--brand); color:#fff; padding:11px 20px; border-radius:3px; transition:background .15s}
+.btn:hover{background:var(--brand-dark); border-color:var(--brand-dark)}
+.btn:disabled{opacity:.4; cursor:not-allowed}
+.btn.ghost{background:transparent; color:var(--brand)}
+.btn.ghost:hover{background:var(--brand-soft)}
+.row{display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-top:18px}
+.row.end{justify-content:flex-end}
+
+/* ---- Alternativas (escolha) ---- */
+.options{display:grid; grid-template-columns:1fr; gap:10px; margin-top:8px}
+.opt{text-align:left; border:1px solid var(--border-color); background:var(--paper-content); border-radius:4px;
+  padding:13px 14px; cursor:pointer; font-family:var(--font-sans); font-size:.95rem; color:var(--text-primary); transition:border-color .12s, background .12s}
+.opt:hover{border-color:var(--brand); background:var(--brand-soft)}
+
+/* ---- Asserção-razão (corpo) ---- */
+.ar-asfundo{color:var(--text-secondary); margin:0 0 12px}
+.ar-bloco{border-left:3px solid var(--brand-line); padding-left:16px; margin:0 0 8px}
+.ar-bloco p{margin:0 0 .5em}
+.ar-pois{font-style:italic; color:var(--brand); font-family:var(--font-serif); margin:.2em 0 !important}
+
+/* ---- Reveal: gabarito comentado ---- */
+.reveal{margin-top:18px; padding:16px 18px; border:1px solid var(--brand-line); border-radius:4px; background:#fffdfa}
+.reveal .nota{font-style:italic; color:var(--text-muted); margin-bottom:10px}
+.reveal .lab{font-family:var(--font-mono); font-size:.7rem; text-transform:uppercase; letter-spacing:.06em; color:var(--brand); margin:14px 0 6px}
+.gab .alt{border:1px solid var(--border-color); border-radius:4px; padding:11px 13px; margin-bottom:8px; background:var(--paper-content)}
+.gab .alt.ok{border-color:var(--ok); background:var(--ok-soft)}
+.gab .alt.no{border-color:#c44; background:rgba(204,68,68,.08)}
+.gab .alt .mk{font-family:var(--font-mono); font-weight:700; margin-right:6px}
+.gab .alt.ok .mk{color:var(--ok)} .gab .alt.no .mk{color:#c44}
+.gab .alt .cmt{font-size:.9rem; color:var(--text-secondary); margin-top:5px}
+.fundamento{font-size:.86rem; color:var(--text-muted)}
+.reveal .link a{color:var(--brand); text-decoration:none; font-weight:600}
+.reveal .link a:hover{color:var(--brand-dark); text-decoration:underline}
+
+/* ---- Topo / progresso ---- */
+.topbar{display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; font-size:.82rem; color:var(--text-muted)}
+.bonus-tag{display:inline-block; font-family:var(--font-mono); font-size:.66rem; text-transform:uppercase; letter-spacing:.05em; color:var(--brand); border:1px solid var(--brand-line); border-radius:20px; padding:1px 8px; margin-left:8px}
+.progress{height:5px; background:var(--border-color); border-radius:3px; overflow:hidden; margin-bottom:22px}
+.progress > i{display:block; height:100%; background:var(--brand); width:0; transition:width .3s}
+.score{font-family:var(--font-mono); color:var(--brand); font-weight:500}
+
+/* ---- Síntese ---- */
+.badge{display:inline-block; font-family:var(--font-mono); font-size:.8rem; padding:6px 12px; border:1px solid var(--brand); color:var(--brand); border-radius:20px; margin:4px 0}
+.louvor{display:inline-block; font-family:var(--font-mono); font-size:.8rem; padding:6px 12px; border:1px solid var(--ok); color:var(--ok); background:var(--ok-soft); border-radius:20px; margin:0 8px 4px 0}
+.synth-list{margin-top:18px; border-top:1px solid var(--border-color)}
+.synth-list .item{border-bottom:1px solid var(--border-color); padding:12px 0}
+.synth-list .item b{font-family:var(--font-serif)}
+.sync-msg{margin-top:4px}
+.sync-msg.ok{color:var(--ok)}
+.sync-msg.erro{color:var(--warn)}
+.read-cta{margin-top:26px; padding-top:18px; border-top:1px solid var(--border-color); font-size:.92rem; color:var(--text-secondary)}
+.read-cta cite{font-family:var(--font-serif); font-style:italic; color:var(--text-primary)}
+.read-cta a{color:var(--brand); text-decoration:none; font-weight:600; white-space:nowrap}
+.read-cta a:hover{color:var(--brand-dark); text-decoration:underline}
+
+.hidden{display:none !important}
+.step{display:none} .step.active{display:block; animation:fade .25s ease}
+@keyframes fade{from{opacity:0; transform:translateY(4px)} to{opacity:1; transform:none}}
+input[type=text]{width:100%; font-family:var(--font-sans); font-size:1rem; padding:11px 12px; border:1px solid var(--border-color); border-radius:4px}
+input[type=text]:focus{outline:none; border-color:var(--brand)}
+label.lbl{display:block; font-size:.84rem; font-weight:600; color:var(--text-secondary); margin:14px 0 6px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ============ ENTRADA ============ -->
+  <section id="intro" class="step active">
+    <div class="kicker">Atividade 4 · Consolidação — não vale nota, vale a discussão</div>
+    <h1>Simulado — Questões Comentadas</h1>
+    <p>Questões objetivas no estilo das provas de residência: uma vinheta curta e a <b>melhor resposta</b> entre quatro. Depois de cada uma, o <b>gabarito comentado</b> explica por que a certa é certa e por que as outras estão erradas.</p>
+    <p>O foco é <b>semiologia</b>, não diagnóstico nem conduta. Aqui há uma resposta certa, mas nos casos reais as fronteiras podem ser mais tênues do que num enunciado de prova.</p>
+    <p>No fim, <b>duas questões-bônus</b> opcionais, em asserção-razão. A medalha vem das 8 questões; as bônus não tiram nada de quem parar antes, valem pontos extras e, para quem gabaritar as 8 e as 2, rendem uma menção de louvor por cima da medalha.</p>
+    <div class="card">
+      <p class="small muted" style="margin-bottom:14px">Trabalhem em grupo, num só aparelho. Para começar, digitem o código da sessão que o professor projetou na tela e escolham um nome para o grupo.</p>
+      <label class="lbl" for="sessao" style="margin-top:0">Código da sessão</label>
+      <input type="text" id="sessao" placeholder="O professor projeta este código" autocomplete="off" autocapitalize="characters" spellcheck="false">
+      <p class="small" id="sessaoErro" style="color:#c44; display:none; margin-top:6px"></p>
+      <p class="small muted" style="margin:14px 0 6px">São permitidos no nome do grupo letras, números, hífen (-) e underline (_); não use espaços, acentos ou ç.</p>
+      <label class="lbl" for="grupo" style="margin-top:0">Nome ou número do grupo</label>
+      <input type="text" id="grupo" placeholder="Ex.: Mesa-3 ou Os_Frontais" autocomplete="off" autocapitalize="off" spellcheck="false">
+      <p class="small" id="grupoErro" style="color:#c44; display:none; margin-top:6px"></p>
+      <div class="row"><button class="btn" id="startBtn">Começar</button></div>
+    </div>
+  </section>
+
+  <!-- ============ LOOP DE QUESTÕES ============ -->
+  <section id="loop" class="step">
+    <div class="topbar">
+      <span><span id="caseCounter">Questão 1 de 8</span><span class="bonus-tag hidden" id="bonusTag">questão-bônus</span></span>
+      <span class="score">Pontos: <span id="scoreVal">0</span></span>
+    </div>
+    <div class="progress"><i id="progressBar"></i></div>
+
+    <div id="qBody"></div>
+
+    <p class="small muted" id="opcaoInstr" style="margin:18px 0 0"></p>
+    <div class="options" id="opcoesBox"></div>
+
+    <div id="revealBox" class="reveal hidden">
+      <p class="nota small" id="revNota"></p>
+      <div class="lab">Gabarito comentado</div>
+      <div class="gab" id="gabList"></div>
+      <p class="fundamento" id="revFundamento" style="margin-top:12px"></p>
+      <p class="link" id="revLinkWrap" style="margin-top:8px"><a id="revLink" target="_blank" rel="noopener">Ver no Glossário →</a></p>
+    </div>
+
+    <div class="row end hidden" id="nextRow"><button class="btn" id="nextBtn">Próxima questão →</button></div>
+  </section>
+
+  <!-- ============ TELA-PONTE (após a 8ª) ============ -->
+  <section id="ponte" class="step">
+    <div class="kicker">Fim das 8</div>
+    <h1>Sua medalha já está definida</h1>
+    <div class="card">
+      <p style="margin:0">Fim das 8. Sua medalha já está definida por elas. Estas duas, em asserção-razão, são extras: quem parar aqui não perde nada; quem acertar as duas, em cima de um 8/8, ganha a menção de louvor.</p>
+      <div class="row">
+        <button class="btn" id="encararBtn">Encarar os bônus</button>
+        <button class="btn ghost" id="pularBtn">Pular para o resultado</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ RESULTADO ============ -->
+  <section id="synth" class="step">
+    <div class="kicker">Fim do simulado</div>
+    <h1>O resultado de vocês</h1>
+    <p>Grupo <b id="synthGroup"></b>. Vocês acertaram <span class="score" id="synthScore"></span> de 8.<span id="synthBonus"></span></p>
+    <div id="synthBadge"></div>
+
+    <div class="synth-list" id="synthList"></div>
+
+    <div class="card" style="margin-top:18px; background:var(--sidebar-bg)">
+      <h3>Para o debate de turma</h3>
+      <p class="small">Antes de discutir com a sala:</p>
+      <p class="small" style="margin-bottom:0">• Em qual questão a turma mais <b>errou</b> — e qual propriedade estava em jogo?<br>• Houve alguma em que vocês souberam <b>nomear</b> o fenômeno, mas erraram a <b>propriedade</b>?<br>• Onde a resposta dependeu da <b>autoria</b> do ato ("é meu, mas não controlo" × "não é meu")?<br>• Em que ponto do <b>arco do ato voluntário</b> cada fenômeno da prova quebrou?</p>
+    </div>
+
+    <p class="small sync-msg" id="syncMsg" style="margin-top:14px"></p>
+    <div class="row"><button class="btn ghost" id="restartBtn">Refazer</button></div>
+
+    <p class="read-cta">Esse raciocínio é o do livro <cite>Intencionalidade, Vontade, Impulsividade e Livre Arbítrio</cite>. <a href="../index.html">Conheça o projeto →</a></p>
+  </section>
+
+</div>
+
+<!-- Config + helper do Supabase + banco de questões. Ordem importa. Sem CDN. -->
+<script src="lib/supabase-config.js"></script>
+<script src="lib/supabase.js"></script>
+<script src="lib/questoes-data.js"></script>
+
+<script>
+"use strict";
+
+/* =========================================================================
+   BANCO — fonte única em lib/questoes-data.js (atividade + painel).
+   ========================================================================= */
+const QUESTOES = window.QUESTOES_DATA.QUESTOES;
+const AR_OPCOES = window.QUESTOES_DATA.AR_OPCOES;
+const TOTAL = QUESTOES.length;       // 10 (8 base + 2 bônus)
+const BASE = QUESTOES.filter(q => !q.bonus).length; // 8
+
+/* =========================================================================
+   ESTADO
+   ========================================================================= */
+const SESSAO_URL = (new URLSearchParams(location.search).get("sessao") || "").trim().toUpperCase();
+const estado = { sessao:"", grupo:"", idx:0, score:0, bonus:0, respostas:[], _opcoesAtual:null, _escolhaTmp:undefined };
+// respostas[i] = { item_id, escolha, correto, bonus }
+
+/* =========================================================================
+   PERSISTÊNCIA LOCAL + ENVIO INCREMENTAL  (mesmo padrão das demais atividades)
+   ========================================================================= */
+const ATIVIDADE = "questoes";
+function chaveEstado(s,g){ return `questoes:estado:${s}:${g}`; }
+function chavePendente(s,g){ return `questoes:pendente:${s}:${g}`; }
+
+function lerEstadoSalvo(s,g){ try { return JSON.parse(localStorage.getItem(chaveEstado(s,g)) || "null"); } catch(e){ return null; } }
+function salvarLocal(){
+  try {
+    localStorage.setItem(chaveEstado(estado.sessao, estado.grupo), JSON.stringify({
+      sessao:estado.sessao, grupo:estado.grupo, idx:estado.idx, score:estado.score, bonus:estado.bonus, respostas:estado.respostas
+    }));
+  } catch(e){}
+}
+function limparLocal(s,g){ try { localStorage.removeItem(chaveEstado(s,g)); localStorage.removeItem(chavePendente(s,g)); } catch(e){} }
+
+/* Payload CUMULATIVO: só itens concluídos (com escolha). pontuacao = base + bônus. */
+function montarPayload(){
+  const itens = estado.respostas
+    .filter(r => r && typeof r.escolha === "string")
+    .map(r => ({ item_id:r.item_id, escolha:r.escolha, correto:r.correto, bonus:r.bonus }));
+  const base = itens.filter(it => !it.bonus && it.correto).length;
+  const bon  = itens.filter(it => it.bonus && it.correto).length;
+  return { sessao:estado.sessao, atividade:ATIVIDADE, grupo:estado.grupo, pontuacao:base+bon, dados:{ itens } };
+}
+
+let syncPendente = false, reenvioTimer = null;
+function refletirSync(){
+  const el = document.getElementById("syncMsg"); if (!el) return;
+  if (syncPendente){ el.className = "small sync-msg erro"; el.textContent = "Respostas salvas neste aparelho. Sem conexão com a turma — tentando reenviar…"; }
+  else { el.className = "small sync-msg ok"; el.textContent = "✓ Respostas salvas automaticamente."; }
+}
+function guardarPendente(payload){ syncPendente = true; try { localStorage.setItem(chavePendente(estado.sessao, estado.grupo), JSON.stringify(payload)); } catch(e){} agendarReenvio(); }
+function limparPendente(){ syncPendente = false; try { localStorage.removeItem(chavePendente(estado.sessao, estado.grupo)); } catch(e){} }
+function lerPendente(){ try { return JSON.parse(localStorage.getItem(chavePendente(estado.sessao, estado.grupo)) || "null"); } catch(e){ return null; } }
+function agendarReenvio(){
+  if (reenvioTimer) return;
+  reenvioTimer = setInterval(async ()=>{
+    const pend = lerPendente();
+    if (!pend){ clearInterval(reenvioTimer); reenvioTimer = null; return; }
+    if (!(window.SB && SB.configValida())) return;
+    try { const r = await SB.enviarResultado(pend); if (r.ok){ limparPendente(); clearInterval(reenvioTimer); reenvioTimer = null; refletirSync(); } } catch(e){}
+  }, 8000);
+}
+async function enviar(payload){
+  try {
+    if (!(window.SB && SB.configValida())){ guardarPendente(payload); return; }
+    const r = await SB.enviarResultado(payload);
+    if (r.ok) limparPendente(); else guardarPendente(payload);
+  } catch(e){ guardarPendente(payload); }
+  refletirSync();
+}
+function salvarProgresso(){ salvarLocal(); enviar(montarPayload()); }
+
+/* =========================================================================
+   NAVEGAÇÃO
+   ========================================================================= */
+function show(sectionId){
+  document.querySelectorAll(".wrap > .step").forEach(s=>s.classList.remove("active"));
+  document.getElementById(sectionId).classList.add("active");
+  window.scrollTo({top:0, behavior:"smooth"});
+}
+function escapeHtml(s){ return String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c])); }
+function embaralhar(arr){ const a = arr.slice(); for (let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); const t=a[i]; a[i]=a[j]; a[j]=t; } return a; }
+
+/* =========================================================================
+   FLUXO
+   ========================================================================= */
+if (SESSAO_URL) document.getElementById("sessao").value = SESSAO_URL;
+
+document.getElementById("startBtn").addEventListener("click", ()=>{
+  const sErro = document.getElementById("sessaoErro");
+  const gErro = document.getElementById("grupoErro");
+  const s = document.getElementById("sessao").value.trim().toUpperCase();
+  if (!s) { sErro.textContent = "Digite o código da sessão (o professor projeta na tela)."; sErro.style.display = "block"; return; }
+  sErro.style.display = "none";
+  const g = document.getElementById("grupo").value.trim();
+  if (!g) { gErro.textContent = "Digite o nome do grupo para começar."; gErro.style.display = "block"; return; }
+  if (!/^[A-Za-z0-9_-]+$/.test(g)) { gErro.textContent = "Use apenas letras (sem acento), números, hífen ou underline — sem espaços, acentos ou ç."; gErro.style.display = "block"; return; }
+  gErro.style.display = "none";
+
+  // Retomar: concluidos = itens com escolha.
+  const salvo = lerEstadoSalvo(s, g);
+  const resp = (salvo && Array.isArray(salvo.respostas)) ? salvo.respostas : [];
+  const concluidos = resp.filter(r => r && typeof r.escolha === "string").length;
+
+  if (concluidos > 0 &&
+      confirm(`Há progresso salvo do grupo "${g}" (${concluidos} de ${TOTAL}). Retomar de onde parou? (Cancelar recomeça do zero.)`)){
+    const slice = resp.slice(0, concluidos);
+    Object.assign(estado, {
+      sessao:s, grupo:g, respostas:slice,
+      score: slice.filter(r=>!r.bonus && r.correto).length,
+      bonus: slice.filter(r=>r.bonus && r.correto).length,
+      idx: concluidos
+    });
+    if (concluidos >= TOTAL){ montarResultado(); show("synth"); }
+    else if (concluidos === BASE){ show("ponte"); }       // parou no fim das 8 → tela-ponte
+    else { carregarItem(); show("loop"); }
+    return;
+  }
+
+  if (salvo) limparLocal(s, g);
+  Object.assign(estado, { sessao:s, grupo:g, idx:0, score:0, bonus:0, respostas:[] });
+  syncPendente = false;
+  carregarItem(); show("loop");
+});
+document.getElementById("grupo").addEventListener("input", ()=>{ document.getElementById("grupoErro").style.display = "none"; });
+document.getElementById("sessao").addEventListener("input", ()=>{ document.getElementById("sessaoErro").style.display = "none"; });
+
+function carregarItem(){
+  const q = QUESTOES[estado.idx];
+  // contador + tag de bônus
+  if (q.bonus){
+    document.getElementById("caseCounter").textContent = `Bônus ${estado.idx - BASE + 1} de ${TOTAL - BASE}`;
+    document.getElementById("bonusTag").classList.remove("hidden");
+  } else {
+    document.getElementById("caseCounter").textContent = `Questão ${estado.idx + 1} de ${BASE}`;
+    document.getElementById("bonusTag").classList.add("hidden");
+  }
+  document.getElementById("progressBar").style.width = (estado.idx / TOTAL * 100) + "%";
+  document.getElementById("scoreVal").textContent = estado.score + estado.bonus;
+
+  // corpo da questão
+  const body = document.getElementById("qBody");
+  if (q.formato === "assercao_razao"){
+    body.innerHTML =
+      (q.asfundo ? `<p class="ar-asfundo">${q.asfundo}</p>` : "") +
+      `<div class="ar-bloco"><p>${q.assercao_I}</p><p class="ar-pois">pois</p><p>${q.assercao_II}</p></div>`;
+    document.getElementById("opcaoInstr").textContent = "Avaliem as duas asserções e a relação entre elas. Escolham:";
+    estado._opcoesAtual = AR_OPCOES;                 // ordem fixa A–E (não embaralha)
+  } else {
+    body.innerHTML = `<p class="vinheta">${q.vinheta}</p><p class="enunciado">${q.enunciado}</p>`;
+    document.getElementById("opcaoInstr").textContent = "Escolham a melhor alternativa. Ao tocar, a resposta trava e o comentário aparece.";
+    estado._opcoesAtual = embaralhar(q.opcoes);      // embaralha (posição não prevê a correta)
+  }
+
+  // alternativas
+  const box = document.getElementById("opcoesBox"); box.innerHTML = "";
+  estado._opcoesAtual.forEach(o=>{
+    const b = document.createElement("button");
+    b.className = "opt"; b.dataset.k = o.chave;
+    b.innerHTML = (q.formato === "assercao_razao") ? `<b>${o.chave})</b> ${o.label}` : o.label;
+    b.addEventListener("click", ()=>escolher(o.chave));
+    box.appendChild(b);
+  });
+
+  // reset
+  estado._escolhaTmp = undefined;
+  document.getElementById("opcaoInstr").classList.remove("hidden");
+  document.getElementById("opcoesBox").classList.remove("hidden");
+  document.getElementById("revealBox").classList.add("hidden");
+  document.getElementById("nextRow").classList.add("hidden");
+}
+
+function escolher(chave){
+  const q = QUESTOES[estado.idx];
+  const correto = (chave === q.correta);
+  estado._escolhaTmp = chave;
+  if (correto){ if (q.bonus) estado.bonus += 1; else estado.score += 1; }
+  document.getElementById("scoreVal").textContent = estado.score + estado.bonus;
+  estado.respostas[estado.idx] = { item_id:q.id, escolha:chave, correto:correto, bonus:!!q.bonus };
+
+  // gabarito comentado: cada alternativa com marcador + comentário
+  const gab = document.getElementById("gabList"); gab.innerHTML = "";
+  estado._opcoesAtual.forEach(o=>{
+    const ehCorreta = (o.chave === q.correta);
+    const ehEscolha = (o.chave === chave);
+    const cls = ehCorreta ? "ok" : (ehEscolha ? "no" : "");
+    const mk = ehCorreta ? "✓" : (ehEscolha ? "✕" : "·");
+    const comentario = (q.formato === "assercao_razao") ? q.comentarios[o.chave] : o.comentario;
+    const rotulo = (q.formato === "assercao_razao") ? (o.chave + ") " + o.label) : o.label;
+    const div = document.createElement("div");
+    div.className = "alt" + (cls ? " " + cls : "");
+    div.innerHTML = `<span class="mk">${mk}</span><b>${rotulo}</b><div class="cmt">${comentario}</div>`;
+    gab.appendChild(div);
+  });
+
+  document.getElementById("revNota").textContent = window.QUESTOES_DATA.NOTA_REVELACAO;
+  document.getElementById("revFundamento").innerHTML = `Fundamento: Sims, cap. ${escapeHtml(q.ancora.cap)}, <i>${escapeHtml(q.ancora.titulo)}</i>.`;
+  const linkWrap = document.getElementById("revLinkWrap");
+  if (q.glossario){ document.getElementById("revLink").href = q.glossario; linkWrap.classList.remove("hidden"); }
+  else { linkWrap.classList.add("hidden"); }
+
+  // rótulo do botão de avanço
+  let label;
+  if (estado.idx === BASE - 1) label = "Ir para os bônus →";       // fim das 8 → tela-ponte
+  else if (estado.idx >= TOTAL - 1) label = "Ver o resultado →";   // fim dos bônus
+  else label = "Próxima questão →";
+  document.getElementById("nextBtn").textContent = label;
+
+  document.getElementById("opcaoInstr").classList.add("hidden");
+  document.getElementById("opcoesBox").classList.add("hidden");
+  document.getElementById("revealBox").classList.remove("hidden");
+  document.getElementById("nextRow").classList.remove("hidden");
+
+  salvarProgresso();
+}
+
+document.getElementById("nextBtn").addEventListener("click", ()=>{
+  if (estado.idx === BASE - 1){ show("ponte"); return; }   // após a 8ª → tela-ponte
+  estado.idx++;
+  if (estado.idx >= TOTAL){ montarResultado(); show("synth"); }
+  else carregarItem();
+});
+
+/* ---- tela-ponte ---- */
+document.getElementById("encararBtn").addEventListener("click", ()=>{ estado.idx = BASE; carregarItem(); show("loop"); });
+document.getElementById("pularBtn").addEventListener("click", ()=>{ montarResultado(); show("synth"); });
+
+/* =========================================================================
+   RESULTADO
+   ========================================================================= */
+function montarResultado(){
+  document.getElementById("progressBar").style.width = "100%";
+  document.getElementById("synthGroup").textContent = estado.grupo;
+  document.getElementById("synthScore").textContent = estado.score;
+
+  const fezBonus = estado.respostas.some(r => r && r.bonus);
+  document.getElementById("synthBonus").textContent = fezBonus ? ` + ${estado.bonus} de 2 no bônus.` : "";
+
+  // medalha (sobre as 8 base) + louvor (8/8 e 2/2, por cima)
+  let titulo;
+  if (estado.score >= 7) titulo = "Raciocínio semiológico afiado";
+  else if (estado.score >= 4) titulo = "Semiólogo em formação";
+  else titulo = "Aprendiz do raciocínio";
+  const louvor = (estado.score === BASE && estado.bonus === (TOTAL - BASE))
+    ? `<span class="louvor">menção com louvor</span>` : "";
+  document.getElementById("synthBadge").innerHTML = louvor + `<span class="badge">${titulo}</span>`;
+
+  // lista: questão → correta → ✓/✕
+  const list = document.getElementById("synthList"); list.innerHTML = "";
+  estado.respostas.forEach((r,i)=>{
+    if (!r || typeof r.escolha !== "string") return;
+    const q = QUESTOES[i];
+    let corretaLabel;
+    if (q.formato === "assercao_razao") corretaLabel = "Alternativa " + q.correta;
+    else corretaLabel = (q.opcoes.find(o=>o.chave===q.correta) || {}).label || "—";
+    const acerto = r.correto ? "✓" : "✕";
+    const tag = q.bonus ? " (bônus)" : "";
+    const div = document.createElement("div"); div.className = "item";
+    div.innerHTML = `<b>${q.id}. ${escapeHtml(q.grupo)}${tag}</b> — ${acerto}` +
+      `<br><span class="small muted">Correta: ${escapeHtml(corretaLabel)}</span>`;
+    list.appendChild(div);
+  });
+
+  refletirSync();
+  salvarProgresso();
+}
+
+/* =========================================================================
+   REFAZER — recomeça o MESMO grupo/sessão (confirma; limpa só o local).
+   ========================================================================= */
+document.getElementById("restartBtn").addEventListener("click", ()=>{
+  if (!confirm("Isto recomeça do zero. Tem certeza?")) return;
+  limparLocal(estado.sessao, estado.grupo);
+  if (reenvioTimer){ clearInterval(reenvioTimer); reenvioTimer = null; }
+  syncPendente = false;
+  estado.idx = 0; estado.score = 0; estado.bonus = 0; estado.respostas = []; estado._escolhaTmp = undefined;
+  carregarItem(); show("loop");
+});
+</script>
+</body>
+</html>
