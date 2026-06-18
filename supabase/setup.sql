@@ -38,9 +38,17 @@ drop policy if exists "anon_insert_respostas" on public.respostas;
 create policy "anon_insert_respostas" on public.respostas
   for insert to anon with check (true);
 
+--    LEITURA restrita ao PROFESSOR (login por email — ver atividades/lib/painel-auth.js).
+--    O painel lê com o token do usuário autenticado; só o email autorizado enxerga
+--    as respostas. Substitui a leitura anônima: a chave anon NÃO lê mais a tabela
+--    (os alunos só ESCREVEM — insert/update acima). Trocar de professor = trocar o
+--    email abaixo. (Rollout: aplique owner_select primeiro; só remova a leitura
+--    anônima — drop anon_select_respostas — depois que o login estiver funcionando.)
 drop policy if exists "anon_select_respostas" on public.respostas;
-create policy "anon_select_respostas" on public.respostas
-  for select to anon using (true);
+drop policy if exists "owner_select_respostas" on public.respostas;
+create policy "owner_select_respostas" on public.respostas
+  for select to authenticated
+  using ( (auth.jwt() ->> 'email') = 'henriquealvarenga@gmail.com' );
 
 --    UPDATE é NECESSÁRIO para o envio incremental: o upsert
 --    (on_conflict=sessao,atividade,grupo + resolution=merge-duplicates) entra
