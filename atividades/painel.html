@@ -150,6 +150,10 @@ h1{font-family:var(--font-serif); font-weight:700; color:var(--text-primary); li
       <label for="sessaoInput">Código da sessão (override manual)</label>
       <input type="text" id="sessaoInput" autocomplete="off" autocapitalize="characters" placeholder="código gerado acima">
     </div>
+    <div class="field">
+      <label for="numGruposInput">Nº de grupos (2–10)</label>
+      <input type="number" id="numGruposInput" min="2" max="10" step="1" value="6" style="min-width:90px">
+    </div>
     <div class="status">
       <span class="live off" id="liveTag"><span class="dot"></span><span id="liveText">parado</span></span>
       <span><span class="count" id="grupoCount">0</span> grupo(s)</span>
@@ -158,6 +162,14 @@ h1{font-family:var(--font-serif); font-weight:700; color:var(--text-primary); li
       <span class="muted small" id="authWho"></span>
       <button class="btn ghost" id="authSair">Sair</button>
     </div>
+  </div>
+
+  <!-- Controle do REVELAR (SPEC §6,§8): antes de revelar, o telão mostra só o
+       progresso; REVELAR abre o gabarito e, nas atividades pontuadas, avança
+       para o pódio (rodada → classificação geral). "Ocultar" volta ao monitor. -->
+  <div class="bar" style="justify-content:flex-start; gap:12px">
+    <button class="btn" id="revelarBtn">REVELAR ▸</button>
+    <button class="btn ghost" id="recolherBtn" style="display:none">◂ Ocultar (voltar ao monitor)</button>
   </div>
 
   <div class="notice" id="notice" style="display:none"></div>
@@ -181,6 +193,7 @@ h1{font-family:var(--font-serif); font-weight:700; color:var(--text-primary); li
      Acrescentar atividade = incluir os dois <script> dela aqui. -->
 <script src="lib/supabase-config.js"></script>
 <script src="lib/supabase.js"></script>
+<script src="lib/sfx.js"></script>
 <script src="lib/painel-auth.js"></script>
 <script src="lib/painel-core.js"></script>
 

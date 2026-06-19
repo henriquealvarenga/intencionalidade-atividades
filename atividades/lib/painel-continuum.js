@@ -85,6 +85,7 @@
     label: "Continuum",           // rótulo da aba / instrução do código
     rota: "01-continuum.html",    // página da atividade
     placar: true,                 // shell mostra o placar genérico
+    maxPontos: 80,                // agregador §7: 8 casos × 10 pts = 80 (normaliza /100)
     dataGlobal: "CONTINUUM_DATA", // window[...] carregado via <script> antes daqui
     render: render
   });

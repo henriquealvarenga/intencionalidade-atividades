@@ -97,8 +97,11 @@
   global.registrarPainel({
     id: "questoes",
     label: "Simulado",
-    rota: "04-questoes.html",
+    rota: "03-questoes.html",
     placar: true,
+    maxPontos: 8,                // agregador §7: 8 questões-base = 100; os 2 bônus são
+                                 // seguro (a normalização limita a nota a 100) — bônus
+                                 // não penaliza quem para antes. (Decisão do autor, jun/2026.)
     dataGlobal: "QUESTOES_DATA",
     render: render
   });

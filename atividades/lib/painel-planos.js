@@ -87,8 +87,9 @@
   global.registrarPainel({
     id: "planos",
     label: "Arquitetura da ação",
-    rota: "05-planos.html",
+    rota: "04-planos.html",
     placar: true,
+    maxPontos: 8,                // agregador §7: 8 casos × 1 pt = 8 (normaliza /100)
     dataGlobal: "PLANOS_DATA",
     render: render
   });

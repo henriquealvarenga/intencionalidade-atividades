@@ -100,8 +100,9 @@
   global.registrarPainel({
     id: "fenomenos",                // === valor da coluna `atividade`
     label: "Fenômenos",             // rótulo da aba / instrução do código
-    rota: "03-fenomenos.html",      // página da atividade
+    rota: "02-fenomenos.html",      // página da atividade
     placar: true,                   // pontua → placar genérico do shell
+    maxPontos: 8,                   // agregador §7: 8 itens × 1 pt = 8 (normaliza /100)
     dataGlobal: "FENOMENOS_DATA",   // window[...] carregado via <script> antes daqui
     render: render
   });

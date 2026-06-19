@@ -137,18 +137,9 @@ label.lbl{display:block; font-size:.84rem; font-weight:600; color:var(--text-sec
     <p><b>O último caso não é crime</b>, ninguém feriu ninguém. A pergunta é se esta pessoa ainda deve decidir por si mesma, ou se alguém deveria decidir por ela.</p>
     <p>Em cada caso, vocês vão ler os fatos, identificar qual capacidade estava comprometida e dar um veredito.</p>
     <p>Para todos esses casos <b>não há uma resposta correta</b>: peritos e tribunais reais divergem, e o que se decide numa época pode não valer no futuro. Por isso, redijam um pequeno texto justificando o veredito do seu grupo — é ele que vocês vão defender no debate com a turma.</p>
-    <div class="card">
-      <p class="small muted" style="margin-bottom:14px">Trabalhem em grupo, num só aparelho. Para começar, digitem o código da sessão que o professor projetou na tela e escolham um nome para o grupo.</p>
-      <label class="lbl" for="sessao" style="margin-top:0">Código da sessão</label>
-      <input type="text" id="sessao" placeholder="O professor projeta este código" autocomplete="off" autocapitalize="characters" spellcheck="false">
-      <p class="small" id="sessaoErro" style="color:#c44; display:none; margin-top:6px"></p>
-      <p class="small muted" style="margin:14px 0 6px">São permitidos no nome do grupo letras, números, hífen (-) e underline (_); não use espaços, acentos ou ç.</p>
-      <label class="lbl" for="grupo" style="margin-top:0">Nome ou número do grupo</label>
-      <input type="text" id="grupo" placeholder="Ex.: Mesa-3 ou Os_Frontais" autocomplete="off" autocapitalize="off" spellcheck="false">
-      <p class="small" id="grupoErro" style="color:#c44; display:none; margin-top:6px"></p>
-      <div class="row">
-        <button class="btn" id="startBtn">Começar</button>
-      </div>
+    <p class="small muted">Trabalhem em grupo, num só aparelho.</p>
+    <div class="row">
+      <button class="btn" id="startBtn">Começar →</button>
     </div>
   </section>
 
@@ -218,6 +209,7 @@ label.lbl{display:block; font-size:.84rem; font-weight:600; color:var(--text-sec
     <p class="small sync-msg" id="syncMsg" style="margin-top:14px"></p>
     <div class="row">
       <button class="btn ghost" id="restartBtn">Refazer</button>
+      <a class="btn" id="voltarHub" href="index.html" style="display:none">Voltar →</a>
     </div>
 
     <!-- Convite de volta ao livro (../index.html = raiz do site publicado). -->
@@ -230,6 +222,8 @@ label.lbl{display:block; font-size:.84rem; font-weight:600; color:var(--text-sec
      Tudo local — sem CDN. -->
 <script src="lib/supabase-config.js"></script>
 <script src="lib/supabase.js"></script>
+<script src="lib/aula.js"></script>
+<script src="lib/sfx.js"></script>
 <script src="lib/juri-data.js"></script>
 
 <script>
@@ -248,10 +242,7 @@ const TOTAL = CASOS.length;
 /* =========================================================================
    ESTADO
    ========================================================================= */
-/* Código da sessão: sem default silencioso; vem do campo (obrigatório) ou de
-   ?sessao= na URL (prefill). Normalizado para MAIÚSCULAS (casa com o painel). */
-const SESSAO_URL = (new URLSearchParams(location.search).get("sessao") || "").trim().toUpperCase();
-
+/* Sessão + grupo vêm da IDENTIDADE do hub (ver §3 e lib/aula.js): sem login aqui. */
 const estado = { sessao:"", grupo:"", idx:0, respostas:[], _capTmp:undefined, _verTmp:undefined };
 // respostas[i] = { caso_id, capacidade, veredito, justif }  (justif fica só local)
 
@@ -297,6 +288,11 @@ let reenvioTimer = null;
 function refletirSync(){
   const el = document.getElementById("syncMsg");
   if (!el) return;
+  if (MODO !== "aula"){   // treino: nada é enviado (SPEC §1)
+    el.className = "small sync-msg ok";
+    el.textContent = "Modo treino — as respostas ficam só neste aparelho.";
+    return;
+  }
   if (syncPendente){
     el.className = "small sync-msg erro";
     el.textContent = "Respostas salvas neste aparelho. Sem conexão com a turma — tentando reenviar…";
@@ -331,6 +327,7 @@ function agendarReenvio(){
   }, 8000);
 }
 async function enviar(payload){
+  if (MODO !== "aula"){ return; }   // SPEC §1: treino calcula só na tela; nada vai ao Supabase
   try {
     if (!(window.SB && SB.configValida())){ guardarPendente(payload); return; }
     const r = await SB.enviarResultado(payload);
@@ -359,55 +356,39 @@ function showSub(id){
 /* =========================================================================
    FLUXO
    ========================================================================= */
-if (SESSAO_URL) document.getElementById("sessao").value = SESSAO_URL;
+/* =========================================================================
+   IDENTIDADE COMPARTILHADA (SPEC §3) — sem login próprio (lê do hub).
+   O Júri é a última etapa do campeonato; pontuação null, mas marca conclusão.
+   ========================================================================= */
+const CTX = AULA.exigir();          // {modo, sessao, grupo} ou redireciona ao hub
+let MODO = CTX ? CTX.modo : "aula";
+if (CTX) bootAtividade();
 
-document.getElementById("startBtn").addEventListener("click", ()=>{
-  const sErro = document.getElementById("sessaoErro");
-  const gErro = document.getElementById("grupoErro");
-  const s = document.getElementById("sessao").value.trim().toUpperCase();
-  if (!s) {
-    sErro.textContent = "Digite o código da sessão (o professor projeta na tela).";
-    sErro.style.display = "block"; return;
-  }
-  sErro.style.display = "none";
-
-  const g = document.getElementById("grupo").value.trim();
-  if (!g) {
-    gErro.textContent = "Digite o nome do grupo para começar.";
-    gErro.style.display = "block"; return;
-  }
-  if (!/^[A-Za-z0-9_-]+$/.test(g)) {
-    gErro.textContent = "Use apenas letras (sem acento), números, hífen ou underline — sem espaços, acentos ou ç.";
-    gErro.style.display = "block"; return;
-  }
-  gErro.style.display = "none";
-
-  // Retomar progresso salvo deste (sessao+grupo). concluidos = casos com veredito.
-  const salvo = lerEstadoSalvo(s, g);
+function bootAtividade(){
+  SFX.montarBotaoMudo();
+  estado.sessao = CTX.sessao;
+  estado.grupo  = CTX.grupo;
+  const salvo = lerEstadoSalvo(CTX.sessao, CTX.grupo);
   const concluidos = salvo && Array.isArray(salvo.respostas)
     ? salvo.respostas.filter(r => r && typeof r.veredito === "string").length : 0;
 
-  if (concluidos >= TOTAL &&
-      confirm(`O júri "${g}" já concluiu nesta sessão. Ver a síntese? (Cancelar recomeça do zero.)`)){
-    Object.assign(estado, { sessao:s, grupo:g, respostas:salvo.respostas.slice(0,TOTAL), idx:TOTAL });
+  if (concluidos >= TOTAL){    // concluída → síntese (read-only em aula; rever em treino)
+    Object.assign(estado, { respostas:salvo.respostas.slice(0,TOTAL), idx:TOTAL });
     montarSintese(); show("synth"); return;
   }
-  if (concluidos > 0 && concluidos < TOTAL &&
-      confirm(`Há progresso salvo do júri "${g}" (caso ${concluidos+1} de ${TOTAL}). Retomar de onde parou? (Cancelar recomeça do zero.)`)){
-    Object.assign(estado, { sessao:s, grupo:g, respostas:salvo.respostas.slice(0,concluidos), idx:concluidos });
+  if (concluidos > 0){         // retoma de onde parou
+    Object.assign(estado, { respostas:salvo.respostas.slice(0,concluidos), idx:concluidos });
     show("loop"); carregarCaso(); return;
   }
+  show("intro");               // começo do zero: mostra a abertura instrucional
+}
 
-  if (salvo) limparLocal(s, g);
-  Object.assign(estado, { sessao:s, grupo:g, idx:0, respostas:[] });
+document.getElementById("startBtn").addEventListener("click", ()=>{
+  limparLocal(estado.sessao, estado.grupo);
+  Object.assign(estado, { idx:0, respostas:[] });
   syncPendente = false;
+  SFX.click();
   show("loop"); carregarCaso();
-});
-document.getElementById("grupo").addEventListener("input", ()=>{
-  document.getElementById("grupoErro").style.display = "none";
-});
-document.getElementById("sessao").addEventListener("input", ()=>{
-  document.getElementById("sessaoErro").style.display = "none";
 });
 
 /* ---- render de um grupo de opções (capacidade ou veredito) ---- */
@@ -482,15 +463,26 @@ document.getElementById("revealBtn").addEventListener("click", ()=>{
   document.getElementById("nextBtn").textContent =
     (estado.idx >= TOTAL-1) ? "Ver a síntese →" : "Próximo caso →";
 
+  SFX.click();       // veredito registrado (sem gabarito → sem som de acerto/erro)
   salvarProgresso(); // caso concluído → salva local + envia estado cumulativo (upsert)
   showSub("stepReveal");
 });
 
 document.getElementById("nextBtn").addEventListener("click", ()=>{
+  SFX.click();
   estado.idx++;
   if (estado.idx >= TOTAL){ montarSintese(); show("synth"); }
   else carregarCaso();
 });
+
+/* Botões do fim (SPEC §1,§5): em aula, read-only + volta ao campeonato; em treino, refaz. */
+function ajustarBotoesFim(){
+  const restart = document.getElementById("restartBtn");
+  const voltar  = document.getElementById("voltarHub");
+  if (!restart || !voltar) return;
+  if (MODO === "aula"){ restart.style.display = "none"; voltar.style.display = ""; voltar.textContent = "Voltar ao campeonato →"; }
+  else { restart.style.display = ""; voltar.style.display = ""; voltar.textContent = "Voltar às atividades →"; }
+}
 
 /* =========================================================================
    SÍNTESE
@@ -514,6 +506,8 @@ function montarSintese(){
 
   refletirSync();   // estado otimista; enviar() corrige se falhar
   salvarProgresso();
+  if (MODO === "aula") AULA.marcarConcluida(estado.sessao, estado.grupo, ATIVIDADE);
+  ajustarBotoesFim();
 }
 
 /* =========================================================================

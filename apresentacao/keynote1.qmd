@@ -179,10 +179,10 @@ O jargão é etiqueta. O que importa é **compreender o fenômeno**.]{.lead}
 
 ::: {.passos}
 1. [**Continuum**]{} — onde termina o impulso e começa a escolha → [abrir](../atividades/01-continuum.html)
-2. [**Júri simulado**]{} — quem responde, e por quê → [abrir](../atividades/02-juri.html)
-3. [**Nomear o fenômeno**]{} — a fronteira entre termos vizinhos → [abrir](../atividades/03-fenomenos.html)
-4. [**Simulado comentado**]{} — testar o que ficou → [abrir](../atividades/04-questoes.html)
-5. [**Arquitetura da ação**]{} *(extra)* — planos, à la Bratman → [abrir](../atividades/05-planos.html)
+2. [**Júri simulado**]{} — quem responde, e por quê → [abrir](../atividades/05-juri.html)
+3. [**Nomear o fenômeno**]{} — a fronteira entre termos vizinhos → [abrir](../atividades/02-fenomenos.html)
+4. [**Simulado comentado**]{} — testar o que ficou → [abrir](../atividades/03-questoes.html)
+5. [**Arquitetura da ação**]{} *(extra)* — planos, à la Bratman → [abrir](../atividades/04-planos.html)
 :::
 
 ## {background-color="#92400e" .divider}

@@ -1,7 +1,7 @@
 /* =============================================================================
    BANCO DE CASOS — Atividade 2 (Júri simulado: imputabilidade e responsabilidade)
    Orientado a dados. FONTE ÚNICA: consumido tanto pela atividade do aluno
-   (02-juri.html) quanto pelo painel do professor (lib/painel-juri.js).
+   (05-juri.html) quanto pelo painel do professor (lib/painel-juri.js).
 
    Guarda METADADOS e REVELAÇÃO — nunca o que o grupo digita. Texto de tela é
    verbatim do _specs/TEXT-juri.md; metadados (corte, links, fontes) da _specs/SPEC-juri.md.

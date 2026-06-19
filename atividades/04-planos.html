@@ -3,17 +3,17 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Atividade 4 — Simulado: Questões Comentadas</title>
+<title>Atividade 5 — A arquitetura da ação</title>
 
 <!-- =========================================================================
-     ATIVIDADE 4 — SIMULADO (Questões Comentadas)
+     ATIVIDADE 5 (extra) — A ARQUITETURA DA AÇÃO (teoria do planejamento, Bratman)
      App self-contained, sem dependências externas (sem CDN), orientado a dados.
      Identidade visual herdada do tema editorial do livro (paper + laranja queimado).
-     Pensado para 1 dispositivo por grupo. Dois formatos: "melhor resposta" (1–8,
-     4 alternativas embaralhadas, +1) e "asserção-razão" (bônus 9–10, 5 opções
-     fixas A–E). Medalha sobre /8; bônus fora do denominador + menção de louvor.
-     Envio INCREMENTAL via RPC/upsert (atividade:"questoes"); o gabarito comentado
-     NÃO vai ao painel. Mesmo banco/lib das demais atividades.
+     Pensado para 1 dispositivo por grupo. Formato único: "melhor resposta" — dado
+     um caso, localizar O PONTO DA ARQUITETURA que falhou (6 pontos da régua; 4
+     opções embaralhadas; +1 por acerto). Medalha sobre /8. Envio INCREMENTAL via
+     RPC/upsert (atividade:"planos"); o gabarito comentado NÃO vai ao painel.
+     Mesmo banco/lib das demais atividades — zero DDL.
      ========================================================================= -->
 
 <style>
@@ -67,12 +67,6 @@ p{margin:0 0 1em}
   padding:13px 14px; cursor:pointer; font-family:var(--font-sans); font-size:.95rem; color:var(--text-primary); transition:border-color .12s, background .12s}
 .opt:hover{border-color:var(--brand); background:var(--brand-soft)}
 
-/* ---- Asserção-razão (corpo) ---- */
-.ar-asfundo{color:var(--text-secondary); margin:0 0 12px}
-.ar-bloco{border-left:3px solid var(--brand-line); padding-left:16px; margin:0 0 8px}
-.ar-bloco p{margin:0 0 .5em}
-.ar-pois{font-style:italic; color:var(--brand); font-family:var(--font-serif); margin:.2em 0 !important}
-
 /* ---- Reveal: gabarito comentado ---- */
 .reveal{margin-top:18px; padding:16px 18px; border:1px solid var(--brand-line); border-radius:4px; background:#fffdfa}
 .reveal .nota{font-style:italic; color:var(--text-muted); margin-bottom:10px}
@@ -84,19 +78,18 @@ p{margin:0 0 1em}
 .gab .alt.ok .mk{color:var(--ok)} .gab .alt.no .mk{color:#c44}
 .gab .alt .cmt{font-size:.9rem; color:var(--text-secondary); margin-top:5px}
 .fundamento{font-size:.86rem; color:var(--text-muted)}
-.reveal .link a{color:var(--brand); text-decoration:none; font-weight:600}
+.reveal .link{margin-top:8px}
+.reveal .link a{color:var(--brand); text-decoration:none; font-weight:600; margin-right:16px; white-space:nowrap}
 .reveal .link a:hover{color:var(--brand-dark); text-decoration:underline}
 
 /* ---- Topo / progresso ---- */
 .topbar{display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; font-size:.82rem; color:var(--text-muted)}
-.bonus-tag{display:inline-block; font-family:var(--font-mono); font-size:.66rem; text-transform:uppercase; letter-spacing:.05em; color:var(--brand); border:1px solid var(--brand-line); border-radius:20px; padding:1px 8px; margin-left:8px}
 .progress{height:5px; background:var(--border-color); border-radius:3px; overflow:hidden; margin-bottom:22px}
 .progress > i{display:block; height:100%; background:var(--brand); width:0; transition:width .3s}
 .score{font-family:var(--font-mono); color:var(--brand); font-weight:500}
 
 /* ---- Síntese ---- */
 .badge{display:inline-block; font-family:var(--font-mono); font-size:.8rem; padding:6px 12px; border:1px solid var(--brand); color:var(--brand); border-radius:20px; margin:4px 0}
-.louvor{display:inline-block; font-family:var(--font-mono); font-size:.8rem; padding:6px 12px; border:1px solid var(--ok); color:var(--ok); background:var(--ok-soft); border-radius:20px; margin:0 8px 4px 0}
 .synth-list{margin-top:18px; border-top:1px solid var(--border-color)}
 .synth-list .item{border-bottom:1px solid var(--border-color); padding:12px 0}
 .synth-list .item b{font-family:var(--font-serif)}
@@ -121,28 +114,19 @@ label.lbl{display:block; font-size:.84rem; font-weight:600; color:var(--text-sec
 
   <!-- ============ ENTRADA ============ -->
   <section id="intro" class="step active">
-    <div class="kicker">Atividade 4 · Consolidação — não vale nota, vale a discussão</div>
-    <h1>Simulado — Questões Comentadas</h1>
-    <p>Questões objetivas no estilo das provas de residência: uma vinheta curta e a <b>melhor resposta</b> entre quatro. Depois de cada uma, o <b>gabarito comentado</b> explica por que a certa é certa e por que as outras estão erradas.</p>
-    <p>O foco é <b>semiologia</b>, não diagnóstico nem conduta. Aqui há uma resposta certa, mas nos casos reais as fronteiras podem ser mais tênues do que num enunciado de prova.</p>
-    <p>No fim, <b>duas questões-bônus</b> opcionais, em asserção-razão. A medalha vem das 8 questões; as bônus não tiram nada de quem parar antes, valem pontos extras e, para quem gabaritar as 8 e as 2, rendem uma menção de louvor por cima da medalha.</p>
-    <div class="card">
-      <p class="small muted" style="margin-bottom:14px">Trabalhem em grupo, num só aparelho. Para começar, digitem o código da sessão que o professor projetou na tela e escolham um nome para o grupo.</p>
-      <label class="lbl" for="sessao" style="margin-top:0">Código da sessão</label>
-      <input type="text" id="sessao" placeholder="O professor projeta este código" autocomplete="off" autocapitalize="characters" spellcheck="false">
-      <p class="small" id="sessaoErro" style="color:#c44; display:none; margin-top:6px"></p>
-      <p class="small muted" style="margin:14px 0 6px">São permitidos no nome do grupo letras, números, hífen (-) e underline (_); não use espaços, acentos ou ç.</p>
-      <label class="lbl" for="grupo" style="margin-top:0">Nome ou número do grupo</label>
-      <input type="text" id="grupo" placeholder="Ex.: Mesa-3 ou Os_Frontais" autocomplete="off" autocapitalize="off" spellcheck="false">
-      <p class="small" id="grupoErro" style="color:#c44; display:none; margin-top:6px"></p>
-      <div class="row"><button class="btn" id="startBtn">Começar</button></div>
-    </div>
+    <div class="kicker">Atividade extra · A teoria do planejamento</div>
+    <h1>A arquitetura da ação</h1>
+    <p>Para o filósofo Michael Bratman, somos <b>agentes planejadores</b>. Uma intenção não é um simples desejo: é um <b>compromisso</b> que conduz a ação, resiste a ser largado por qualquer motivo e se organiza em planos — gerais primeiro, detalhados depois. Quando algo dá errado na vontade, raramente é "a força de vontade" inteira que falha. Falha um <b>ponto específico</b> dessa arquitetura: às vezes a intenção nem se forma; às vezes se forma e não vira passos; às vezes é firme, mas não segura na hora.</p>
+    <p>Em cada caso, vocês vão ler um relato curto e dizer <b>onde, na arquitetura do planejamento, a coisa quebrou</b>. Depois, a tela mostra o porquê — e remete ao capítulo do livro e à obra de Bratman onde a ideia está.</p>
+    <p>Há resposta certa (a régua é a do livro). Ainda assim, alguns casos reais ficam na <b>fronteira</b> entre dois pontos — o que importa é o raciocínio, não decorar.</p>
+    <p class="small muted">Trabalhem em grupo, num só aparelho.</p>
+    <div class="row"><button class="btn" id="startBtn">Começar →</button></div>
   </section>
 
-  <!-- ============ LOOP DE QUESTÕES ============ -->
+  <!-- ============ LOOP DE CASOS ============ -->
   <section id="loop" class="step">
     <div class="topbar">
-      <span><span id="caseCounter">Questão 1 de 8</span><span class="bonus-tag hidden" id="bonusTag">questão-bônus</span></span>
+      <span id="caseCounter">Caso 1 de 8</span>
       <span class="score">Pontos: <span id="scoreVal">0</span></span>
     </div>
     <div class="progress"><i id="progressBar"></i></div>
@@ -157,101 +141,91 @@ label.lbl{display:block; font-size:.84rem; font-weight:600; color:var(--text-sec
       <div class="lab">Gabarito comentado</div>
       <div class="gab" id="gabList"></div>
       <p class="fundamento" id="revFundamento" style="margin-top:12px"></p>
-      <p class="link" id="revLinkWrap" style="margin-top:8px"><a id="revLink" target="_blank" rel="noopener">Ver no Glossário →</a></p>
+      <p class="link" id="revLinkWrap"></p>
     </div>
 
-    <div class="row end hidden" id="nextRow"><button class="btn" id="nextBtn">Próxima questão →</button></div>
-  </section>
-
-  <!-- ============ TELA-PONTE (após a 8ª) ============ -->
-  <section id="ponte" class="step">
-    <div class="kicker">Fim das 8</div>
-    <h1>Sua medalha já está definida</h1>
-    <div class="card">
-      <p style="margin:0">Fim das 8. Sua medalha já está definida por elas. Estas duas, em asserção-razão, são extras: quem parar aqui não perde nada; quem acertar as duas, em cima de um 8/8, ganha a menção de louvor.</p>
-      <div class="row">
-        <button class="btn" id="encararBtn">Encarar os bônus</button>
-        <button class="btn ghost" id="pularBtn">Pular para o resultado</button>
-      </div>
-    </div>
+    <div class="row end hidden" id="nextRow"><button class="btn" id="nextBtn">Próximo caso →</button></div>
   </section>
 
   <!-- ============ RESULTADO ============ -->
   <section id="synth" class="step">
-    <div class="kicker">Fim do simulado</div>
+    <div class="kicker">Fim da atividade</div>
     <h1>O resultado de vocês</h1>
-    <p>Grupo <b id="synthGroup"></b>. Vocês acertaram <span class="score" id="synthScore"></span> de 8.<span id="synthBonus"></span></p>
+    <p>Grupo <b id="synthGroup"></b>. Vocês acertaram <span class="score" id="synthScore"></span> de 8.</p>
     <div id="synthBadge"></div>
 
     <div class="synth-list" id="synthList"></div>
 
     <div class="card" style="margin-top:18px; background:var(--sidebar-bg)">
       <h3>Para o debate de turma</h3>
-      <p class="small">Antes de discutir com a sala:</p>
-      <p class="small" style="margin-bottom:0">• Em qual questão a turma mais <b>errou</b> — e qual propriedade estava em jogo?<br>• Houve alguma em que vocês souberam <b>nomear</b> o fenômeno, mas erraram a <b>propriedade</b>?<br>• Onde a resposta dependeu da <b>autoria</b> do ato ("é meu, mas não controlo" × "não é meu")?<br>• Em que ponto do <b>arco do ato voluntário</b> cada fenômeno da prova quebrou?</p>
+      <p class="small" style="margin-bottom:0">• Em qual caso a turma mais se <b>dividiu</b> — e quais dois pontos da régua estavam em jogo?<br>• Onde foi mais difícil separar <b>instabilidade</b> de <b>rigidez</b> (os dois erros de reconsideração)?<br>• Em algum caso vocês trocariam a "força de vontade" por <b>um ponto específico</b> da arquitetura?<br>• O que muda, para a <b>responsabilidade</b> (lembrem o júri), quando o que falta é o <b>agente</b> e não uma etapa do plano?</p>
     </div>
 
     <p class="small sync-msg" id="syncMsg" style="margin-top:14px"></p>
-    <div class="row"><button class="btn ghost" id="restartBtn">Refazer</button></div>
+    <div class="row"><button class="btn ghost" id="restartBtn">Refazer</button><a class="btn" id="voltarHub" href="index.html" style="display:none">Voltar →</a></div>
 
-    <p class="read-cta">Esse raciocínio é o do livro <cite>Intencionalidade, Vontade, Impulsividade e Livre Arbítrio</cite>. <a href="../index.html">Conheça o projeto →</a></p>
+    <p class="read-cta">Essa anatomia da ação é a de Michael Bratman, desenvolvida no livro <cite>Intencionalidade, Vontade, Impulsividade e Livre Arbítrio</cite>. <a href="../index.html">Conheça o projeto →</a></p>
   </section>
 
 </div>
 
-<!-- Config + helper do Supabase + banco de questões. Ordem importa. Sem CDN. -->
+<!-- Config + helper do Supabase + banco de casos. Ordem importa. Sem CDN. -->
 <script src="lib/supabase-config.js"></script>
 <script src="lib/supabase.js"></script>
-<script src="lib/questoes-data.js"></script>
+<script src="lib/aula.js"></script>
+<script src="lib/sfx.js"></script>
+<script src="lib/planos-data.js"></script>
 
 <script>
 "use strict";
 
 /* =========================================================================
-   BANCO — fonte única em lib/questoes-data.js (atividade + painel).
+   BANCO — fonte única em lib/planos-data.js (atividade + painel).
    ========================================================================= */
-const QUESTOES = window.QUESTOES_DATA.QUESTOES;
-const AR_OPCOES = window.QUESTOES_DATA.AR_OPCOES;
-const TOTAL = QUESTOES.length;       // 10 (8 base + 2 bônus)
-const BASE = QUESTOES.filter(q => !q.bonus).length; // 8
+const REGUA = window.PLANOS_DATA.REGUA;
+const ITENS = window.PLANOS_DATA.ITENS;
+const TOTAL = ITENS.length;            // 8
+
+/* Label de cada ponto de falha vem SEMPRE da régua (fonte única). */
+const LABEL = {};
+REGUA.forEach(r => { LABEL[r.chave] = r.label; });
 
 /* =========================================================================
    ESTADO
    ========================================================================= */
-const SESSAO_URL = (new URLSearchParams(location.search).get("sessao") || "").trim().toUpperCase();
-const estado = { sessao:"", grupo:"", idx:0, score:0, bonus:0, respostas:[], _opcoesAtual:null, _escolhaTmp:undefined };
-// respostas[i] = { item_id, escolha, correto, bonus }
+const estado = { sessao:"", grupo:"", idx:0, score:0, respostas:[], _opcoesAtual:null, _escolhaTmp:undefined };
+// respostas[i] = { item_id, escolha, correto }
 
 /* =========================================================================
    PERSISTÊNCIA LOCAL + ENVIO INCREMENTAL  (mesmo padrão das demais atividades)
    ========================================================================= */
-const ATIVIDADE = "questoes";
-function chaveEstado(s,g){ return `questoes:estado:${s}:${g}`; }
-function chavePendente(s,g){ return `questoes:pendente:${s}:${g}`; }
+const ATIVIDADE = "planos";
+function chaveEstado(s,g){ return `planos:estado:${s}:${g}`; }
+function chavePendente(s,g){ return `planos:pendente:${s}:${g}`; }
 
 function lerEstadoSalvo(s,g){ try { return JSON.parse(localStorage.getItem(chaveEstado(s,g)) || "null"); } catch(e){ return null; } }
 function salvarLocal(){
   try {
     localStorage.setItem(chaveEstado(estado.sessao, estado.grupo), JSON.stringify({
-      sessao:estado.sessao, grupo:estado.grupo, idx:estado.idx, score:estado.score, bonus:estado.bonus, respostas:estado.respostas
+      sessao:estado.sessao, grupo:estado.grupo, idx:estado.idx, score:estado.score, respostas:estado.respostas
     }));
   } catch(e){}
 }
 function limparLocal(s,g){ try { localStorage.removeItem(chaveEstado(s,g)); localStorage.removeItem(chavePendente(s,g)); } catch(e){} }
 
-/* Payload CUMULATIVO: só itens concluídos (com escolha). pontuacao = base + bônus. */
+/* Payload CUMULATIVO: só itens concluídos (com escolha). pontuacao = nº de acertos. */
 function montarPayload(){
   const itens = estado.respostas
     .filter(r => r && typeof r.escolha === "string")
-    .map(r => ({ item_id:r.item_id, escolha:r.escolha, correto:r.correto, bonus:r.bonus }));
-  const base = itens.filter(it => !it.bonus && it.correto).length;
-  const bon  = itens.filter(it => it.bonus && it.correto).length;
-  return { sessao:estado.sessao, atividade:ATIVIDADE, grupo:estado.grupo, pontuacao:base+bon, dados:{ itens } };
+    .map(r => ({ item_id:r.item_id, escolha:r.escolha, correto:r.correto }));
+  const acertos = itens.filter(it => it.correto).length;
+  return { sessao:estado.sessao, atividade:ATIVIDADE, grupo:estado.grupo, pontuacao:acertos, dados:{ itens } };
 }
 
 let syncPendente = false, reenvioTimer = null;
 function refletirSync(){
   const el = document.getElementById("syncMsg"); if (!el) return;
+  if (MODO !== "aula"){ el.className = "small sync-msg ok"; el.textContent = "Modo treino — as respostas ficam só neste aparelho."; return; }
   if (syncPendente){ el.className = "small sync-msg erro"; el.textContent = "Respostas salvas neste aparelho. Sem conexão com a turma — tentando reenviar…"; }
   else { el.className = "small sync-msg ok"; el.textContent = "✓ Respostas salvas automaticamente."; }
 }
@@ -268,6 +242,7 @@ function agendarReenvio(){
   }, 8000);
 }
 async function enviar(payload){
+  if (MODO !== "aula"){ return; }   // SPEC §1: treino calcula só na tela; nada vai ao Supabase
   try {
     if (!(window.SB && SB.configValida())){ guardarPendente(payload); return; }
     const r = await SB.enviarResultado(payload);
@@ -291,80 +266,60 @@ function embaralhar(arr){ const a = arr.slice(); for (let i=a.length-1;i>0;i--){
 /* =========================================================================
    FLUXO
    ========================================================================= */
-if (SESSAO_URL) document.getElementById("sessao").value = SESSAO_URL;
+/* =========================================================================
+   IDENTIDADE COMPARTILHADA (SPEC §3) — sem login próprio (lê do hub).
+   ========================================================================= */
+const CTX = AULA.exigir();          // {modo, sessao, grupo} ou redireciona ao hub
+let MODO = CTX ? CTX.modo : "aula";
+if (CTX) bootAtividade();
 
-document.getElementById("startBtn").addEventListener("click", ()=>{
-  const sErro = document.getElementById("sessaoErro");
-  const gErro = document.getElementById("grupoErro");
-  const s = document.getElementById("sessao").value.trim().toUpperCase();
-  if (!s) { sErro.textContent = "Digite o código da sessão (o professor projeta na tela)."; sErro.style.display = "block"; return; }
-  sErro.style.display = "none";
-  const g = document.getElementById("grupo").value.trim();
-  if (!g) { gErro.textContent = "Digite o nome do grupo para começar."; gErro.style.display = "block"; return; }
-  if (!/^[A-Za-z0-9_-]+$/.test(g)) { gErro.textContent = "Use apenas letras (sem acento), números, hífen ou underline — sem espaços, acentos ou ç."; gErro.style.display = "block"; return; }
-  gErro.style.display = "none";
-
-  // Retomar: concluidos = itens com escolha.
-  const salvo = lerEstadoSalvo(s, g);
+function bootAtividade(){
+  SFX.montarBotaoMudo();
+  estado.sessao = CTX.sessao;
+  estado.grupo  = CTX.grupo;
+  const salvo = lerEstadoSalvo(CTX.sessao, CTX.grupo);
   const resp = (salvo && Array.isArray(salvo.respostas)) ? salvo.respostas : [];
   const concluidos = resp.filter(r => r && typeof r.escolha === "string").length;
 
-  if (concluidos > 0 &&
-      confirm(`Há progresso salvo do grupo "${g}" (${concluidos} de ${TOTAL}). Retomar de onde parou? (Cancelar recomeça do zero.)`)){
-    const slice = resp.slice(0, concluidos);
-    Object.assign(estado, {
-      sessao:s, grupo:g, respostas:slice,
-      score: slice.filter(r=>!r.bonus && r.correto).length,
-      bonus: slice.filter(r=>r.bonus && r.correto).length,
-      idx: concluidos
-    });
-    if (concluidos >= TOTAL){ montarResultado(); show("synth"); }
-    else if (concluidos === BASE){ show("ponte"); }       // parou no fim das 8 → tela-ponte
-    else { carregarItem(); show("loop"); }
-    return;
+  if (concluidos >= TOTAL){    // concluída → resultado (read-only em aula; rever em treino)
+    const slice = resp.slice(0, TOTAL);
+    Object.assign(estado, { respostas:slice, score:slice.filter(r=>r.correto).length, idx:TOTAL });
+    montarResultado(); show("synth"); return;
   }
+  if (concluidos > 0){         // retoma de onde parou
+    const slice = resp.slice(0, concluidos);
+    Object.assign(estado, { respostas:slice, score:slice.filter(r=>r.correto).length, idx:concluidos });
+    carregarItem(); show("loop"); return;
+  }
+  show("intro");               // começo do zero: mostra a abertura instrucional
+}
 
-  if (salvo) limparLocal(s, g);
-  Object.assign(estado, { sessao:s, grupo:g, idx:0, score:0, bonus:0, respostas:[] });
+document.getElementById("startBtn").addEventListener("click", ()=>{
+  limparLocal(estado.sessao, estado.grupo);
+  Object.assign(estado, { idx:0, score:0, respostas:[] });
   syncPendente = false;
+  SFX.click();
   carregarItem(); show("loop");
 });
-document.getElementById("grupo").addEventListener("input", ()=>{ document.getElementById("grupoErro").style.display = "none"; });
-document.getElementById("sessao").addEventListener("input", ()=>{ document.getElementById("sessaoErro").style.display = "none"; });
 
 function carregarItem(){
-  const q = QUESTOES[estado.idx];
-  // contador + tag de bônus
-  if (q.bonus){
-    document.getElementById("caseCounter").textContent = `Bônus ${estado.idx - BASE + 1} de ${TOTAL - BASE}`;
-    document.getElementById("bonusTag").classList.remove("hidden");
-  } else {
-    document.getElementById("caseCounter").textContent = `Questão ${estado.idx + 1} de ${BASE}`;
-    document.getElementById("bonusTag").classList.add("hidden");
-  }
+  const q = ITENS[estado.idx];
+  document.getElementById("caseCounter").textContent = `Caso ${estado.idx + 1} de ${TOTAL}`;
   document.getElementById("progressBar").style.width = (estado.idx / TOTAL * 100) + "%";
-  document.getElementById("scoreVal").textContent = estado.score + estado.bonus;
+  document.getElementById("scoreVal").textContent = estado.score;
 
-  // corpo da questão
-  const body = document.getElementById("qBody");
-  if (q.formato === "assercao_razao"){
-    body.innerHTML =
-      (q.asfundo ? `<p class="ar-asfundo">${q.asfundo}</p>` : "") +
-      `<div class="ar-bloco"><p>${q.assercao_I}</p><p class="ar-pois">pois</p><p>${q.assercao_II}</p></div>`;
-    document.getElementById("opcaoInstr").textContent = "Avaliem as duas asserções e a relação entre elas. Escolham:";
-    estado._opcoesAtual = AR_OPCOES;                 // ordem fixa A–E (não embaralha)
-  } else {
-    body.innerHTML = `<p class="vinheta">${q.vinheta}</p><p class="enunciado">${q.enunciado}</p>`;
-    document.getElementById("opcaoInstr").textContent = "Escolham a melhor alternativa. Ao tocar, a resposta trava e o comentário aparece.";
-    estado._opcoesAtual = embaralhar(q.opcoes);      // embaralha (posição não prevê a correta)
-  }
+  // corpo do caso
+  document.getElementById("qBody").innerHTML =
+    `<p class="vinheta">${q.vinheta}</p><p class="enunciado">${q.enunciado}</p>`;
+  document.getElementById("opcaoInstr").textContent = "Escolham a melhor opção. Ao tocar, a resposta trava e o comentário aparece.";
 
-  // alternativas
+  // alternativas — embaralhadas (a posição nunca prevê a correta); label vem da régua
+  estado._opcoesAtual = embaralhar(q.opcoes);
   const box = document.getElementById("opcoesBox"); box.innerHTML = "";
   estado._opcoesAtual.forEach(o=>{
     const b = document.createElement("button");
     b.className = "opt"; b.dataset.k = o.chave;
-    b.innerHTML = (q.formato === "assercao_razao") ? `<b>${o.chave})</b> ${o.label}` : o.label;
+    b.textContent = LABEL[o.chave];
     b.addEventListener("click", ()=>escolher(o.chave));
     box.appendChild(b);
   });
@@ -378,40 +333,37 @@ function carregarItem(){
 }
 
 function escolher(chave){
-  const q = QUESTOES[estado.idx];
+  const q = ITENS[estado.idx];
   const correto = (chave === q.correta);
   estado._escolhaTmp = chave;
-  if (correto){ if (q.bonus) estado.bonus += 1; else estado.score += 1; }
-  document.getElementById("scoreVal").textContent = estado.score + estado.bonus;
-  estado.respostas[estado.idx] = { item_id:q.id, escolha:chave, correto:correto, bonus:!!q.bonus };
+  if (correto){ estado.score += 1; SFX.acerto(); } else { SFX.erro(); }
+  document.getElementById("scoreVal").textContent = estado.score;
+  estado.respostas[estado.idx] = { item_id:q.id, escolha:chave, correto:correto };
 
-  // gabarito comentado: cada alternativa com marcador + comentário
+  // gabarito comentado: cada opção (na ordem mostrada) com marcador + comentário
   const gab = document.getElementById("gabList"); gab.innerHTML = "";
   estado._opcoesAtual.forEach(o=>{
     const ehCorreta = (o.chave === q.correta);
     const ehEscolha = (o.chave === chave);
     const cls = ehCorreta ? "ok" : (ehEscolha ? "no" : "");
     const mk = ehCorreta ? "✓" : (ehEscolha ? "✕" : "·");
-    const comentario = (q.formato === "assercao_razao") ? q.comentarios[o.chave] : o.comentario;
-    const rotulo = (q.formato === "assercao_razao") ? (o.chave + ") " + o.label) : o.label;
     const div = document.createElement("div");
     div.className = "alt" + (cls ? " " + cls : "");
-    div.innerHTML = `<span class="mk">${mk}</span><b>${rotulo}</b><div class="cmt">${comentario}</div>`;
+    div.innerHTML = `<span class="mk">${mk}</span><b>${escapeHtml(LABEL[o.chave])}</b><div class="cmt">${o.comentario}</div>`;
     gab.appendChild(div);
   });
 
-  document.getElementById("revNota").textContent = window.QUESTOES_DATA.NOTA_REVELACAO;
-  document.getElementById("revFundamento").innerHTML = `Fundamento: Sims, cap. ${escapeHtml(q.ancora.cap)}, <i>${escapeHtml(q.ancora.titulo)}</i>.`;
+  document.getElementById("revNota").textContent = window.PLANOS_DATA.NOTA_REVELACAO;
+  document.getElementById("revFundamento").innerHTML = `Fundamento: ${q.fundamento}`;
+
+  // link(s) ao capítulo — só aqui, na revelação, em nova aba
   const linkWrap = document.getElementById("revLinkWrap");
-  if (q.glossario){ document.getElementById("revLink").href = q.glossario; linkWrap.classList.remove("hidden"); }
-  else { linkWrap.classList.add("hidden"); }
+  linkWrap.innerHTML = (q.links || []).map(l =>
+    `<a href="${l.href}" target="_blank" rel="noopener">Ler o capítulo ${escapeHtml(l.cap)} →</a>`
+  ).join("");
 
   // rótulo do botão de avanço
-  let label;
-  if (estado.idx === BASE - 1) label = "Ir para os bônus →";       // fim das 8 → tela-ponte
-  else if (estado.idx >= TOTAL - 1) label = "Ver o resultado →";   // fim dos bônus
-  else label = "Próxima questão →";
-  document.getElementById("nextBtn").textContent = label;
+  document.getElementById("nextBtn").textContent = (estado.idx >= TOTAL - 1) ? "Ver o resultado →" : "Próximo caso →";
 
   document.getElementById("opcaoInstr").classList.add("hidden");
   document.getElementById("opcoesBox").classList.add("hidden");
@@ -422,15 +374,20 @@ function escolher(chave){
 }
 
 document.getElementById("nextBtn").addEventListener("click", ()=>{
-  if (estado.idx === BASE - 1){ show("ponte"); return; }   // após a 8ª → tela-ponte
+  SFX.click();
   estado.idx++;
   if (estado.idx >= TOTAL){ montarResultado(); show("synth"); }
   else carregarItem();
 });
 
-/* ---- tela-ponte ---- */
-document.getElementById("encararBtn").addEventListener("click", ()=>{ estado.idx = BASE; carregarItem(); show("loop"); });
-document.getElementById("pularBtn").addEventListener("click", ()=>{ montarResultado(); show("synth"); });
+/* Botões do fim (SPEC §1,§5): em aula, read-only + volta ao campeonato; em treino, refaz. */
+function ajustarBotoesFim(){
+  const restart = document.getElementById("restartBtn");
+  const voltar  = document.getElementById("voltarHub");
+  if (!restart || !voltar) return;
+  if (MODO === "aula"){ restart.style.display = "none"; voltar.style.display = ""; voltar.textContent = "Voltar ao campeonato →"; }
+  else { restart.style.display = ""; voltar.style.display = ""; voltar.textContent = "Voltar às atividades →"; }
+}
 
 /* =========================================================================
    RESULTADO
@@ -440,36 +397,29 @@ function montarResultado(){
   document.getElementById("synthGroup").textContent = estado.grupo;
   document.getElementById("synthScore").textContent = estado.score;
 
-  const fezBonus = estado.respostas.some(r => r && r.bonus);
-  document.getElementById("synthBonus").textContent = fezBonus ? ` + ${estado.bonus} de 2 no bônus.` : "";
-
-  // medalha (sobre as 8 base) + louvor (8/8 e 2/2, por cima)
+  // medalha (sobre os 8 casos) — títulos do tema
   let titulo;
-  if (estado.score >= 7) titulo = "Raciocínio semiológico afiado";
-  else if (estado.score >= 4) titulo = "Semiólogo em formação";
-  else titulo = "Aprendiz do raciocínio";
-  const louvor = (estado.score === BASE && estado.bonus === (TOTAL - BASE))
-    ? `<span class="louvor">menção com louvor</span>` : "";
-  document.getElementById("synthBadge").innerHTML = louvor + `<span class="badge">${titulo}</span>`;
+  if (estado.score >= 7) titulo = "Arquiteto da ação";
+  else if (estado.score >= 4) titulo = "Planejador em formação";
+  else titulo = "Aprendiz do planejamento";
+  document.getElementById("synthBadge").innerHTML = `<span class="badge">${titulo}</span>`;
 
-  // lista: questão → correta → ✓/✕
+  // lista: caso → ponto de falha correto → ✓/✕ da escolha do grupo
   const list = document.getElementById("synthList"); list.innerHTML = "";
   estado.respostas.forEach((r,i)=>{
     if (!r || typeof r.escolha !== "string") return;
-    const q = QUESTOES[i];
-    let corretaLabel;
-    if (q.formato === "assercao_razao") corretaLabel = "Alternativa " + q.correta;
-    else corretaLabel = (q.opcoes.find(o=>o.chave===q.correta) || {}).label || "—";
+    const q = ITENS[i];
     const acerto = r.correto ? "✓" : "✕";
-    const tag = q.bonus ? " (bônus)" : "";
     const div = document.createElement("div"); div.className = "item";
-    div.innerHTML = `<b>${q.id}. ${escapeHtml(q.grupo)}${tag}</b> — ${acerto}` +
-      `<br><span class="small muted">Correta: ${escapeHtml(corretaLabel)}</span>`;
+    div.innerHTML = `<b>Caso ${q.id}</b> — ${acerto}` +
+      `<br><span class="small muted">Ponto de falha: ${escapeHtml(LABEL[q.correta])}</span>`;
     list.appendChild(div);
   });
 
   refletirSync();
   salvarProgresso();
+  if (MODO === "aula") AULA.marcarConcluida(estado.sessao, estado.grupo, ATIVIDADE);
+  ajustarBotoesFim();
 }
 
 /* =========================================================================
@@ -480,7 +430,7 @@ document.getElementById("restartBtn").addEventListener("click", ()=>{
   limparLocal(estado.sessao, estado.grupo);
   if (reenvioTimer){ clearInterval(reenvioTimer); reenvioTimer = null; }
   syncPendente = false;
-  estado.idx = 0; estado.score = 0; estado.bonus = 0; estado.respostas = []; estado._escolhaTmp = undefined;
+  estado.idx = 0; estado.score = 0; estado.respostas = []; estado._escolhaTmp = undefined;
   carregarItem(); show("loop");
 });
 </script>

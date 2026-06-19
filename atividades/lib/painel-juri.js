@@ -113,7 +113,7 @@
   global.registrarPainel({
     id: "juri",                  // === valor da coluna `atividade`
     label: "Júri",               // rótulo da aba / instrução do código
-    rota: "02-juri.html",        // página da atividade
+    rota: "05-juri.html",        // página da atividade (último no fluxo do campeonato)
     placar: false,               // sem placar — veredito não tem gabarito
     dataGlobal: "JURI_DATA",     // window[...] carregado via <script> antes daqui
     render: render

@@ -1,7 +1,7 @@
 /* =============================================================================
    BANCO — Atividade 5 (extra): A arquitetura da ação
    Orientado a dados. FONTE ÚNICA de runtime: consumido pela atividade do aluno
-   (05-planos.html) e pelo painel do professor (lib/painel-planos.js).
+   (04-planos.html) e pelo painel do professor (lib/painel-planos.js).
 
    Esta atividade RACIOCINA SOBRE A ARQUITETURA DA AÇÃO INTENCIONAL (teoria do
    planejamento de Michael Bratman): dado um fenômeno da vontade/impulso, em QUE

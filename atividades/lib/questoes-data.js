@@ -1,7 +1,7 @@
 /* =============================================================================
    BANCO DE QUESTÕES — Atividade 4 (Simulado — Questões Comentadas)
    Orientado a dados. FONTE ÚNICA: consumido pela atividade do aluno
-   (04-questoes.html) e pelo painel do professor (lib/painel-questoes.js).
+   (03-questoes.html) e pelo painel do professor (lib/painel-questoes.js).
 
    Esta atividade RACIOCINA SOBRE A PROPRIEDADE/MECANISMO do fenômeno (autoria,
    egodistonia × egossintonia, consciência, finalidade/alívio, juízo crítico, o

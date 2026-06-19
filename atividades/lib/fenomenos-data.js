@@ -1,7 +1,7 @@
 /* =============================================================================
    BANCO DE ITENS — Atividade 3 (Reconhecer e nomear fenômenos)
    Orientado a dados. FONTE ÚNICA: consumido pela atividade do aluno
-   (03-fenomenos.html) e pelo painel do professor (lib/painel-fenomenos.js).
+   (02-fenomenos.html) e pelo painel do professor (lib/painel-fenomenos.js).
 
    Guarda METADADOS e REVELAÇÃO — nunca o que o grupo digita. Texto de tela é
    verbatim do _specs/TEXT-fenomenos.md; metadados (distratores, âncoras) da

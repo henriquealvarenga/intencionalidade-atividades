@@ -159,18 +159,9 @@ label.lbl{display:block; font-size:.84rem; font-weight:600; color:var(--text-sec
     <p>Nessa atividade vocês vão analisar, em grupos, uma série de casos clínicos.</p>
     <p>Em cada um, primeiro identifiquem <b>que tipo de alteração da vontade ou da ação</b> está em jogo — essa atividade é pontuada. Discutam antes de marcar a resposta.</p>
     <p>Em seguida, decidam <b>quanto de "liberdade", de livre-arbítrio</b>, ainda resta à pessoa e marquem numa linha que vai da <b>liberdade</b> (comportamento flexível, com escolha) à <b>determinação</b> (comportamento rígido e compelido). Para a posição na linha não há gabarito — o que conta é o argumento de vocês. <b>Por isso, redijam em grupo um pequeno texto justificando as razões da escolha: é ele que vocês vão defender no debate com a turma.</b></p>
-    <div class="card">
-      <p class="small muted" style="margin-bottom:14px">Trabalhem em grupo, num só aparelho. Para começar, digitem o código da sessão que o professor projetou na tela e escolham um nome para o grupo.</p>
-      <label class="lbl" for="sessao">Código da sessão</label>
-      <input type="text" id="sessao" placeholder="O professor projeta este código" autocomplete="off" autocapitalize="characters" spellcheck="false">
-      <p class="small" id="sessaoErro" style="color:#c44; display:none; margin-top:6px"></p>
-      <p class="small muted" style="margin:14px 0 6px">São permitidos no nome do grupo letras, números, hífen (-) e underline (_); não use espaços, acentos ou ç.</p>
-      <label class="lbl" for="grupo" style="margin-top:0">Nome ou número do grupo</label>
-      <input type="text" id="grupo" placeholder="Ex.: Mesa-3 ou Os_Frontais" autocomplete="off" autocapitalize="off" spellcheck="false">
-      <p class="small" id="grupoErro" style="color:#c44; display:none; margin-top:6px"></p>
-      <div class="row">
-        <button class="btn" id="startBtn">Começar</button>
-      </div>
+    <p class="small muted">Trabalhem em grupo, num só aparelho.</p>
+    <div class="row">
+      <button class="btn" id="startBtn">Começar →</button>
     </div>
   </section>
 
@@ -268,6 +259,7 @@ label.lbl{display:block; font-size:.84rem; font-weight:600; color:var(--text-sec
     <p class="small sync-msg" id="syncMsg" style="margin-top:4px"></p>
     <div class="row">
       <button class="btn ghost" id="restartBtn">Refazer</button>
+      <a class="btn" id="voltarHub" href="index.html" style="display:none">Voltar →</a>
     </div>
 
     <!-- Convite de volta ao livro (caminho relativo robusto no site publicado:
@@ -283,6 +275,8 @@ label.lbl{display:block; font-size:.84rem; font-weight:600; color:var(--text-sec
      Carregar ANTES do script principal. Tudo local — sem CDN. -->
 <script src="lib/supabase-config.js"></script>
 <script src="lib/supabase.js"></script>
+<script src="lib/aula.js"></script>
+<script src="lib/sfx.js"></script>
 <script src="lib/continuum-data.js"></script>
 
 <script>
@@ -302,12 +296,8 @@ const TOTAL = CASOS.length;
 /* =========================================================================
    ESTADO
    ========================================================================= */
-/* Código da sessão = o que separa os envios de aulas diferentes no painel do
-   professor. SEM default silencioso: vem do campo na tela inicial (obrigatório)
-   ou de ?sessao= na URL (apenas prefill de conveniência para testes). É sempre
-   normalizado para MAIÚSCULAS, para casar com o código gerado no painel. */
-const SESSAO_URL = (new URLSearchParams(location.search).get("sessao") || "").trim().toUpperCase();
-
+/* Código da sessão + grupo agora vêm da IDENTIDADE gravada pelo hub (ver §3 e
+   lib/aula.js): não há mais login nesta tela. */
 const estado = { sessao:"", grupo:"", idx:0, score:0, respostas:[] };
 // respostas[i] = {classif, acertou, posicao, justif}
 
@@ -358,6 +348,11 @@ let reenvioTimer = null;
 function refletirSync(){
   const el = document.getElementById("syncMsg");
   if (!el) return;
+  if (MODO !== "aula"){   // treino: nada é enviado (SPEC §1)
+    el.className = "small sync-msg ok";
+    el.textContent = "Modo treino — as respostas ficam só neste aparelho.";
+    return;
+  }
   if (syncPendente){
     el.className = "small sync-msg erro";
     el.textContent = "Respostas salvas neste aparelho. Sem conexão com a turma — tentando reenviar…";
@@ -395,6 +390,7 @@ function agendarReenvio(){
 /* Envio: fire-and-forget. SB.enviarResultado nunca lança, mas o try/catch
    protege contra qualquer imprevisto — a atividade jamais quebra pelo backend. */
 async function enviar(payload){
+  if (MODO !== "aula"){ return; }   // SPEC §1: treino calcula só na tela; nada vai ao Supabase
   try {
     if (!(window.SB && SB.configValida())){ guardarPendente(payload); return; }
     const r = await SB.enviarResultado(payload);
@@ -441,63 +437,42 @@ function showSub(id){
 /* =========================================================================
    FLUXO
    ========================================================================= */
-/* Prefill de conveniência: se ?sessao= veio na URL, preenche o campo (mas o
-   campo continua obrigatório e editável — testes/links diretos). */
-if (SESSAO_URL) document.getElementById("sessao").value = SESSAO_URL;
+/* =========================================================================
+   IDENTIDADE COMPARTILHADA (SPEC §3) — sem login próprio
+   O hub (index.html) já gravou quem é o grupo e o modo; aqui só lemos. Sem
+   identidade → volta ao hub. Com identidade → entra direto, retomando o que
+   houver. A abertura instrucional (#intro) só aparece num começo do zero.
+   ========================================================================= */
+const CTX = AULA.exigir();          // {modo, sessao, grupo} ou redireciona ao hub
+let MODO = CTX ? CTX.modo : "aula";
+if (CTX) bootAtividade();
 
-document.getElementById("startBtn").addEventListener("click", ()=>{
-  const sErro = document.getElementById("sessaoErro");
-  const gErro = document.getElementById("grupoErro");
-  // Código da sessão: obrigatório; normaliza (trim + MAIÚSCULAS p/ casar com o painel).
-  const s = document.getElementById("sessao").value.trim().toUpperCase();
-  if (!s) {
-    sErro.textContent = "Digite o código da sessão (o professor projeta na tela).";
-    sErro.style.display = "block"; return;
-  }
-  sErro.style.display = "none";
-
-  // Nome obrigatório e usável como identificador: letras SEM acento, dígitos, - ou _.
-  const g = document.getElementById("grupo").value.trim();
-  if (!g) {
-    gErro.textContent = "Digite o nome do grupo para começar.";
-    gErro.style.display = "block"; return;
-  }
-  if (!/^[A-Za-z0-9_-]+$/.test(g)) {
-    gErro.textContent = "Use apenas letras (sem acento), números, hífen ou underline — sem espaços, acentos ou ç.";
-    gErro.style.display = "block"; return;
-  }
-  gErro.style.display = "none";
-
-  // Retomar progresso salvo deste (sessao+grupo), se houver. concluidos = casos
-  // que já passaram pelo reveal; é a posição robusta para retomar (independe de
-  // quando foi salvo). Sem isso, começa do zero e descarta progresso divergente.
-  const salvo = lerEstadoSalvo(s, g);
+function bootAtividade(){
+  SFX.montarBotaoMudo();
+  estado.sessao = CTX.sessao;
+  estado.grupo  = CTX.grupo;
+  const salvo = lerEstadoSalvo(CTX.sessao, CTX.grupo);
   const concluidos = salvo && Array.isArray(salvo.respostas)
     ? salvo.respostas.filter(r => r && typeof r.posicao === "number").length : 0;
 
-  if (concluidos >= TOTAL &&
-      confirm(`O grupo "${g}" já concluiu nesta sessão. Ver a síntese? (Cancelar recomeça do zero.)`)){
-    Object.assign(estado, { sessao:s, grupo:g, respostas:salvo.respostas.slice(0,TOTAL), score:salvo.score||0, idx:TOTAL });
+  if (concluidos >= TOTAL){    // concluída → síntese (read-only em aula; rever em treino)
+    Object.assign(estado, { respostas:salvo.respostas.slice(0,TOTAL), score:salvo.score||0, idx:TOTAL });
     montarSintese(); show("synth"); return;
   }
-  if (concluidos > 0 && concluidos < TOTAL &&
-      confirm(`Há progresso salvo do grupo "${g}" (caso ${concluidos+1} de ${TOTAL}). Retomar de onde parou? (Cancelar recomeça do zero.)`)){
-    Object.assign(estado, { sessao:s, grupo:g, respostas:salvo.respostas.slice(0,concluidos), score:salvo.score||0, idx:concluidos });
+  if (concluidos > 0){         // retoma de onde parou
+    Object.assign(estado, { respostas:salvo.respostas.slice(0,concluidos), score:salvo.score||0, idx:concluidos });
     show("loop"); carregarCaso(); return;
   }
+  show("intro");               // começo do zero: mostra a abertura instrucional
+}
 
-  // Começa do zero (descarta qualquer progresso local divergente deste grupo).
-  if (salvo) limparLocal(s, g);
-  Object.assign(estado, { sessao:s, grupo:g, idx:0, score:0, respostas:[] });
+/* "Começar" → inicia do zero o grupo desta identidade (descarta local divergente). */
+document.getElementById("startBtn").addEventListener("click", ()=>{
+  limparLocal(estado.sessao, estado.grupo);
+  Object.assign(estado, { idx:0, score:0, respostas:[] });
   syncPendente = false;
+  SFX.click();
   show("loop"); carregarCaso();
-});
-// limpa os avisos enquanto o aluno corrige
-document.getElementById("grupo").addEventListener("input", ()=>{
-  document.getElementById("grupoErro").style.display = "none";
-});
-document.getElementById("sessao").addEventListener("input", ()=>{
-  document.getElementById("sessaoErro").style.display = "none";
 });
 
 function carregarCaso(){
@@ -545,6 +520,7 @@ function classificar(k){
   if(k===c.correta){ estado.score+=PONTOS_ACERTO; acertou=true; classe="ok"; tag=`✓ Certo · +${PONTOS_ACERTO}`; }
   else if((ADJ[c.correta]||[]).includes(k)){ estado.score+=PONTOS_QUASE; classe="near"; tag=`≈ Quase · +${PONTOS_QUASE}`; }
   else { classe="no"; tag="✕ Reveja"; }
+  if(acertou) SFX.acerto(); else if(classe==="near") SFX.click(); else SFX.erro();
 
   fb.className="feedback show "+classe;
   fb.innerHTML=`<span class="tag">${tag}</span>${c.explica}`;
@@ -599,10 +575,21 @@ document.getElementById("revealBtn").addEventListener("click", ()=>{
 });
 
 document.getElementById("nextBtn").addEventListener("click", ()=>{
+  SFX.click();
   estado.idx++;
   if(estado.idx>=TOTAL){ montarSintese(); show("synth"); }
   else carregarCaso();
 });
+
+/* Botões do fim (SPEC §1,§5): em aula a etapa concluída é read-only (sem Refazer)
+   e leva de volta ao campeonato; em treino, refaz à vontade. */
+function ajustarBotoesFim(){
+  const restart = document.getElementById("restartBtn");
+  const voltar  = document.getElementById("voltarHub");
+  if (!restart || !voltar) return;
+  if (MODO === "aula"){ restart.style.display = "none"; voltar.style.display = ""; voltar.textContent = "Voltar ao campeonato →"; }
+  else { restart.style.display = ""; voltar.style.display = ""; voltar.textContent = "Voltar às atividades →"; }
+}
 
 /* =========================================================================
    SÍNTESE
@@ -643,6 +630,8 @@ function montarSintese(){
   // Ao terminar: garante o salvamento final e mostra o aviso persistente.
   refletirSync();            // estado otimista ("salvas"); enviar() corrige se falhar
   salvarProgresso();
+  if (MODO === "aula") AULA.marcarConcluida(estado.sessao, estado.grupo, ATIVIDADE);
+  ajustarBotoesFim();
 }
 
 /* =========================================================================

@@ -115,10 +115,34 @@
     }
   }
 
+  /* Lê TODAS as linhas de uma sessão — sem filtrar `atividade` — para o agregador
+     acumulado do painel (SPEC §7). Inclui a coluna `atividade` (o agregador
+     precisa saber a que etapa cada linha pertence). Leitura autenticada (token do
+     professor; a policy owner_select já permite). Sem mudança de backend. Retorna
+     um array (vazio em erro). */
+  async function consultarSessaoTudo(sessao) {
+    if (!configValida()) return [];
+    try {
+      var qs = "?sessao=eq." + encodeURIComponent(sessao) +
+               "&select=grupo,atividade,pontuacao,dados,criado_em" +
+               "&order=criado_em.asc";
+      var resp = await fetch(endpoint() + qs, {
+        method: "GET",
+        headers: headers(null, authToken)
+      });
+      if (!resp.ok) return [];
+      var dados = await resp.json();
+      return Array.isArray(dados) ? dados : [];
+    } catch (e) {
+      return [];
+    }
+  }
+
   global.SB = {
     configValida: configValida,
     enviarResultado: enviarResultado,
     consultarSessao: consultarSessao,
+    consultarSessaoTudo: consultarSessaoTudo,
     setAuthToken: setAuthToken
   };
 })(window);
