@@ -1,0 +1,14 @@
+<!-- @font-face injetado no <head> dos decks (include-in-header).
+     Mora AQUI, e não no theme-slides.scss, porque o tema revealjs é compilado
+     para site_libs/revealjs/dist/theme/ — dali url("../fonts/") daria 404.
+     Inline no documento, ../fonts/ resolve relativo ao próprio deck
+     (docs/apresentacao/ -> docs/fonts/), estável entre versões do Quarto.
+     Prefixo "_" mantém o arquivo fora do render do site (não vira página). -->
+<style>
+  @font-face { font-family: "Playfair Display"; src: url("../fonts/PlayfairDisplay-Regular.woff2") format("woff2"); font-weight: 400; font-style: normal;  font-display: swap; }
+  @font-face { font-family: "Playfair Display"; src: url("../fonts/PlayfairDisplay-Italic.woff2")  format("woff2"); font-weight: 400; font-style: italic;  font-display: swap; }
+  @font-face { font-family: "Playfair Display"; src: url("../fonts/PlayfairDisplay-Bold.woff2")    format("woff2"); font-weight: 700; font-style: normal;  font-display: swap; }
+  @font-face { font-family: "Inter"; src: url("../fonts/Inter-Regular.woff2")  format("woff2"); font-weight: 400; font-style: normal; font-display: swap; }
+  @font-face { font-family: "Inter"; src: url("../fonts/Inter-Medium.woff2")   format("woff2"); font-weight: 500; font-style: normal; font-display: swap; }
+  @font-face { font-family: "Inter"; src: url("../fonts/Inter-SemiBold.woff2") format("woff2"); font-weight: 600; font-style: normal; font-display: swap; }
+</style>

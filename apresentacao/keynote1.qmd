@@ -1,0 +1,194 @@
+---
+title: "Intencionalidade & Autogoverno"
+subtitle: "O que faz de uma ação *minha* — e por que isso importa na clínica"
+author: "Henrique Alvarenga"
+lang: pt-BR
+format:
+  revealjs:
+    theme: theme-slides.scss
+    # @font-face self-hosted no <head> (ver _fonts.html para o porquê).
+    include-in-header: _fonts.html
+    transition: fade
+    transition-speed: fast
+    center: true
+    slide-number: false
+    progress: true
+    controls: false
+    controls-tutorial: false
+    hash: false
+    history: false
+    width: 1100
+    height: 720
+    margin: 0.12
+    title-slide-attributes:
+      data-background-color: "#F9F9F7"
+# Deck de abertura: dá o "start" antes das atividades. Slides limpos, uma
+# ideia por vez. O conteúdo de fato é trabalhado nas atividades interativas.
+---
+
+## Dois braços sobem
+
+O meu — eu levanto.
+
+O outro — alguém levanta por mim.
+
+. . .
+
+O movimento é idêntico.
+
+[A diferença é tudo.]{.lead}
+
+## A pergunta {background-color="#92400e" .divider}
+
+O que separa a ação **de que sou autor**
+
+daquilo que apenas **acontece em mim**?
+
+# Os termos {background-color="#1a1a1a" .divider}
+
+[Antes de discutir, nomear. Quatro palavras.]{.lead}
+
+## Intenção {.center}
+
+::: {.term}
+não é desejo
+:::
+
+::: {.gloss}
+Desejo conhecer o Japão e nada muda.\
+Quando *intenciono* ir, compro a passagem, ajusto a agenda, poupo.\
+A intenção **compromete** — o desejo, não.
+:::
+
+## Plano {.center}
+
+::: {.term}
+somos planejadores
+:::
+
+::: {.gloss}
+Não só reagimos ao imediato: projetamos no tempo.\
+O plano é um **esqueleto** do agir — parcial, hierárquico,\
+preenchido conforme a vida acontece. *(Bratman)*
+:::
+
+## Estabilidade {.center}
+
+::: {.term}
+a intenção resiste
+:::
+
+::: {.gloss}
+Uma vez formada, ela vira *default*: conduz a ação\
+sem redeliberar a cada tentação que passa.\
+Estável o bastante para durar — flexível o bastante para mudar.
+:::
+
+## Impulsividade {.center}
+
+::: {.term}
+não é querer demais
+:::
+
+::: {.gloss}
+O impulsivo não deseja mais que os outros.\
+Ele **falha em subordinar** o querer imediato\
+a um compromisso que dure mais que o momento.
+:::
+
+## A fronteira que importa {background-color="#92400e" .divider}
+
+Impulsivo · Compulsivo · Obsessão
+
+[três coisas que se repetem — por mecanismos diferentes]{.lead}
+
+## Onde a linha passa
+
+**Ato impulsivo** — *egossintônico.* Alivia a tensão, sem crítica.
+
+**Ato compulsivo** — *egodistônico.* Resiste, alivia, **mantém o insight**.
+
+**Obsessão** — é **ideia**, não ato.
+
+. . .
+
+[E mais embaixo: a *vivência de influência* — o ato deixa de ser sentido como seu.]{.lead}
+
+# Autogoverno {background-color="#1a1a1a" .divider}
+
+[Ter intenções explica *como* a ação se sustenta.\
+Não explica *de quem* ela é.]{.lead}
+
+## Frankfurt {.center}
+
+::: {.term}
+desejo sobre o desejo
+:::
+
+::: {.gloss}
+Não só querer fumar — querer (ou não) **ser quem quer** fumar.\
+Identifico-me com o desejo que endosso, e ele se torna meu.
+:::
+
+## Bratman {.center}
+
+::: {.term}
+a política que dura
+:::
+
+::: {.gloss}
+O que me representa não é um instante de endosso —\
+é o **padrão que persiste** e liga meu eu de ontem ao de amanhã.\
+A impulsividade vira *falha de política*: o segundo nível não pesa **antes**.
+:::
+
+## Fischer & Ravizza {.center}
+
+::: {.term}
+responder a razões
+:::
+
+::: {.gloss}
+Não importa a *forma* da mente, e sim como ela se comporta:\
+reconheceria uma razão suficiente — e **mudaria** de rumo?\
+Autogoverno é um mecanismo que responderia diferente.
+:::
+
+## Liberdade {background-color="#92400e" .divider}
+
+não é manter todas as opções abertas
+
+[é a **estrutura** que faz a ação seguir de quem você é,\
+e não do impulso do momento]{.lead}
+
+## Um fenômeno, muitos nomes
+
+Abulia, avolição, perturbação da iniciativa.\
+Vivência de influência, experiência de passividade.
+
+. . .
+
+[A mesma psicopatologia, falada em línguas diferentes.\
+O jargão é etiqueta. O que importa é **compreender o fenômeno**.]{.lead}
+
+# Agora é com vocês {background-color="#1a1a1a" .divider}
+
+[Os slides foram o *start*. A aula são as atividades.]{.lead}
+
+## O percurso
+
+::: {.passos}
+1. [**Continuum**]{} — onde termina o impulso e começa a escolha → [abrir](../atividades/01-continuum.html)
+2. [**Júri simulado**]{} — quem responde, e por quê → [abrir](../atividades/02-juri.html)
+3. [**Nomear o fenômeno**]{} — a fronteira entre termos vizinhos → [abrir](../atividades/03-fenomenos.html)
+4. [**Simulado comentado**]{} — testar o que ficou → [abrir](../atividades/04-questoes.html)
+5. [**Arquitetura da ação**]{} *(extra)* — planos, à la Bratman → [abrir](../atividades/05-planos.html)
+:::
+
+## {background-color="#92400e" .divider}
+
+::: {.term style="color:#fff"}
+O agente livre governa\
+o que, entre tudo o que é possível,\
+de fato se torna ação.
+:::

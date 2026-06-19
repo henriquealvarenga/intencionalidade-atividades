@@ -1,0 +1,149 @@
+---
+title: "Você escolhe o que faz?"
+lang: pt-BR
+format:
+  revealjs:
+    theme: theme-slides.scss
+    # @font-face self-hosted no <head> (ver _fonts.html para o porquê).
+    include-in-header: _fonts.html
+    transition: fade
+    background-transition: fade
+    center: true
+    controls: false
+    progress: true
+    slide-number: false
+    hash: false
+    incremental: false
+---
+
+## {.center}
+
+Quase sempre você diria que **sim**.
+
+::: {.notes}
+Deixe a turma concordar. O objetivo é firmar a suposição confortável — "claro que escolho" — antes de quebrá-la no próximo slide.
+:::
+
+## {.center}
+
+> Um homem começa um remédio para Parkinson.<br>Em semanas, perde tudo no jogo.<br>Para o remédio — e a compulsão desaparece.
+
+[Ele *escolheu* jogar?]{.accent}
+
+::: {.notes}
+Caso real (agonista dopaminérgico). NÃO está entre os 8 da atividade — não estraga o "às cegas". Deixe a pergunta no ar.
+:::
+
+## Até que ponto escolhemos o que fazemos? {.center}
+
+[Intencionalidade · Vontade · Impulsividade · Livre-arbítrio]{.muted}
+
+## Duas respostas fáceis. {.center}
+
+::: {.fragment}
+"Tudo é escolha livre."
+:::
+
+::: {.fragment}
+"Tudo é só biologia."
+:::
+
+::: {.fragment .accent}
+As duas estão erradas.
+:::
+
+## Não é sim ou não. {.center}
+
+É um **continuum**.
+
+<div class="continuum" style="background:linear-gradient(90deg,#3a6b4d,#b08a3c,#c0612a)"><span class="lbl-l">Liberdade · flexibilidade</span><span class="lbl-r">Determinação · rigidez</span></div>
+
+::: {.notes}
+A espinha da aula — e da atividade. De um lado, muitos graus de liberdade; do outro, comportamento compelido.
+:::
+
+## Seis formas de perder o controle {.center}
+
+[O vocabulário para julgar os casos.]{.muted}
+
+## Abulia {.center}
+
+A vontade apagada.
+
+::: {.fragment .definicao}
+Perda da capacidade de iniciar a ação. Não há impulso anômalo — há a **ausência** dele.
+:::
+
+## Impulso egodistônico {.center}
+
+Quero o que repudio.
+
+::: {.fragment .definicao}
+O impulso é vivido como errado e estranho ao sujeito — que o condena e, ainda assim, não consegue contê-lo.
+:::
+
+## Compulsão {.center}
+
+Sei que é absurdo — e não consigo parar.
+
+::: {.fragment .definicao}
+Ritual repetido para aliviar a tensão. O juízo crítico está preservado: a pessoa sabe que não faz sentido.
+:::
+
+## Agência alienada {.center}
+
+A ação é minha. A vontade, não.
+
+::: {.fragment .definicao}
+O sujeito não se reconhece como autor do próprio impulso — sente-o como imposto de fora.
+:::
+
+## Ação sem consciência {.center}
+
+Agir sem ninguém em casa.
+
+::: {.fragment .definicao}
+Automatismo: o ato acontece sem experiência e sem intenção. Não há um sujeito consciente decidindo.
+:::
+
+## Decisão empobrecida {.center}
+
+Inteligência intacta. Escolhas péssimas.
+
+::: {.fragment .definicao}
+Sem impulso anômalo nem compulsão. O que falha é a própria capacidade de escolher bem.
+:::
+
+## Mas onde cada um fica na linha? {.center}
+
+::: {.fragment}
+Reversibilidade.
+:::
+
+::: {.fragment}
+Premeditação.
+:::
+
+::: {.fragment}
+Consciência preservada.
+:::
+
+::: {.fragment .accent}
+Aqui o consenso acaba.
+:::
+
+::: {.notes}
+Plante o debate: os mesmos três fatores deslocam um caso na linha. É exatamente o que os grupos vão discutir.
+:::
+
+## Agora é com vocês. {.center}
+
+Em grupos, vocês vão julgar casos reais — e colocá-los no continuum. E defender a escolha.
+
+## Se a biologia pode determinar o querer, quem é responsável? {.center}
+
+[medicina · direito · ética]{.muted}
+
+::: {.notes}
+Fecho que não fecha. A conclusão é a atividade — e a discussão que vem dela.
+:::

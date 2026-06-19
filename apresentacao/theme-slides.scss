@@ -1,0 +1,111 @@
+/*-- scss:defaults --*/
+
+// =========================================================================
+// INTENCIONALIDADE — Tema revealjs (slides)
+// Espelha a paleta do tema editorial do livro (paper off-white, acento
+// laranja queimado, Playfair serif + Inter sans), adaptado para deck.
+// Mantém coerência visual com o site sem reaproveitar o SCSS do html
+// (variáveis do reveal são outras). Fontes self-hosted via ../fonts/.
+// =========================================================================
+
+// Paleta (idêntica a theme-editorial.scss / styles.css)
+$paper:          #F9F9F7;
+$text-primary:   #1a1a1a;
+$text-secondary: #444444;
+$text-muted:     #888888;
+$brand:          #b45309;
+$brand-dark:     #92400e;
+
+// Fontes
+$font-family-sans-serif: "Inter", ui-sans-serif, system-ui, sans-serif !default;
+$font-family-serif:      "Playfair Display", Georgia, "Times New Roman", serif !default;
+
+// Reveal — corpo
+$body-bg:    $paper;
+$body-color: $text-primary;
+$link-color:       $brand;
+$link-color-hover: $brand-dark;
+$selection-bg:    rgba(180, 83, 9, 0.18);
+$selection-color: $text-primary;
+
+// Reveal — tipografia. Root grande: slides limpos, poucas palavras.
+$presentation-font-size-root:    40px;
+$presentation-line-height:       1.5;
+$presentation-heading-font:        $font-family-serif;
+$presentation-heading-color:       $text-primary;
+$presentation-heading-font-weight: 400;
+$presentation-h1-font-size:        2.4em;
+$presentation-h2-font-size:        1.7em;
+$presentation-h3-font-size:        1.25em;
+$presentation-title-slide-text-align: left;
+
+
+/*-- scss:rules --*/
+
+// Fontes self-hosted: o @font-face NÃO mora aqui. Num projeto website o
+// Quarto compila este tema para site_libs/revealjs/dist/theme/, e dali
+// url("../fonts/") apontaria para o lugar errado (404). Por isso as
+// declarações @font-face ficam inline no <head> do deck, via
+// include-in-header: _fonts.html — onde ../fonts/ resolve relativo ao
+// próprio deck (docs/apresentacao/ -> docs/fonts/), estável entre versões.
+
+.reveal {
+  // Acento de marca em ênfases e termos.
+  strong { color: $brand-dark; font-weight: 600; }
+
+  // Filete de marca sob os títulos de slide (h2), discreto.
+  .slides section h2::after {
+    content: "";
+    display: block;
+    width: 2.5rem;
+    height: 2px;
+    margin-top: 0.5rem;
+    background: $brand;
+  }
+
+  // Itálico serif: usado para os termos sendo nomeados (fenomenologia).
+  em { font-family: $font-family-serif; font-style: italic; color: $text-primary; }
+
+  // "Lead" — frase de respiro, cinza, menor. Classe .lead nos parágrafos.
+  .lead { color: $text-muted; font-size: 0.7em; line-height: 1.6; }
+
+  // Helpers usados pelo keynote2 (abridor do Continuum).
+  .muted     { color: $text-muted; }
+  .accent    { color: $brand; }
+  .definicao { font-size: 0.82em; color: $text-secondary; max-width: 80%; margin: 0.4em auto 0; }
+  blockquote { border: 0; box-shadow: none; font-style: normal; line-height: 1.5; }
+
+  // Barra do continuum. O GRADIENTE vem inline no slide (style="..."), NÃO aqui:
+  // gradiente em SCSS quebra o exportador de CSS-vars do Quarto e suja a raiz
+  // com _quarto_internal_scss_error.scss a cada render (bug do Quarto). Aqui
+  // fica só o layout; a cor é responsabilidade do slide.
+  .continuum { position: relative; height: 8px; margin: 1.6em 10% 0.4em; border-radius: 4px; }
+  .continuum .lbl-l, .continuum .lbl-r { position: absolute; top: 16px; font-size: 0.5em; color: $text-muted; }
+  .continuum .lbl-l { left: 0; }
+  .continuum .lbl-r { right: 0; }
+
+  // Termo grande e centralizado (slides de definição estilo Jobs).
+  .term {
+    font-family: $font-family-serif;
+    font-size: 2.2em;
+    line-height: 1.1;
+    color: $text-primary;
+  }
+  .term + .gloss { color: $text-muted; font-size: 0.85em; margin-top: 0.6rem; }
+
+  // Slide de divisória: fundo de marca, texto claro.
+  section.divider {
+    h1, h2, h3, p { color: #ffffff; }
+    h2::after { background: rgba(255,255,255,0.5); }
+  }
+
+  // Lista de atividades — sem bullets, espaçada, números mono de marca.
+  ol.passos { list-style: none; margin-left: 0; }
+  ol.passos li { margin: 0.45em 0; }
+
+  // Footer/rodapé discreto.
+  .slide-number, .footer { color: $text-muted; font-family: $font-family-sans-serif; }
+}
+
+// Slide de divisória pinta o fundo via atributo no cabeçalho (ver .qmd).
+.reveal .slides section.divider { background: $brand-dark; }
