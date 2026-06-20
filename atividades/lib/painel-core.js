@@ -208,15 +208,35 @@
      AGREGADOR ACUMULADO (SPEC §7)
      ========================================================================= */
   function notaDe(pont, max){ return max ? Math.max(0, Math.min(100, (pont || 0) / max * 100)) : 0; }
-  /* rows = TODAS as linhas da sessão. excluir = id de atividade a ignorar (para
-     calcular a classificação "antes desta rodada" e medir movimentação). */
-  function agregar(rows, excluir){
+
+  /* Índice de uma atividade na ordem do fluxo (registry = ordem dos <script>). */
+  function idxNoFluxo(id){
+    for (var i=0;i<registry.length;i++) if (registry[i].id === id) return i;
+    return -1;
+  }
+  /* Conjunto de atividades PONTUADAS até uma posição do fluxo. incluir=true → até
+     a atual inclusive; false → estritamente antes (a "rodada anterior"). É isto que
+     torna o acumulado PROGRESSIVO: revelar a 2ª etapa soma só 1ª+2ª, não tudo o que
+     já foi jogado — senão o total fica igual em qualquer aba. */
+  function pontuadasAte(idAtual, incluir){
+    var lim = idxNoFluxo(idAtual), ids = {};
+    for (var i=0;i<registry.length;i++){
+      var m = registry[i];
+      if (typeof m.maxPontos !== "number") continue;       // Júri (sem placar) fora
+      if (incluir ? (i <= lim) : (i < lim)) ids[m.id] = true;
+    }
+    return ids;
+  }
+
+  /* Agrega linhas JÁ FILTRADAS pelo conjunto de etapas da rodada. Normaliza cada
+     etapa /100 (clamp), soma por grupo, ordena e dá colocação com empate (SPEC §9).
+     jogadas = nº de etapas pontuadas presentes nessas linhas. */
+  function agregar(rows){
     var maxById = {};
     pontuados().forEach(function(m){ maxById[m.id] = m.maxPontos; });
     var porG = {}, jogadas = {};
     rows.forEach(function(r){
       if (!(r.atividade in maxById)) return;          // não-pontuada (Júri) → fora
-      if (excluir && r.atividade === excluir) return;
       jogadas[r.atividade] = true;
       if (!porG[r.grupo]) porG[r.grupo] = { grupo: r.grupo, etapas: {} };
       porG[r.grupo].etapas[r.atividade] = notaDe(r.pontuacao, maxById[r.atividade]); // último vence
@@ -284,7 +304,12 @@
     $("scoreboardWrap").style.display = "none";
     $("atividadeContainer").innerHTML = '<div class="empty">Calculando a classificação…</div>';
     var all = await SB.consultarSessaoTudo(sessao);
-    snap = { atual: agregar(all, null), anterior: agregar(all, atividadeAtiva), rodada: rodadaDados() };
+    // Acumulado PROGRESSIVO: corta pelas etapas pontuadas até a atual (ordem do fluxo).
+    var ate   = pontuadasAte(atividadeAtiva, true);    // 1ª … atual (inclusive)
+    var antes = pontuadasAte(atividadeAtiva, false);   // 1ª … anterior (base das setas ↑↓)
+    var rowsAte   = all.filter(function(r){ return ate[r.atividade]; });
+    var rowsAntes = all.filter(function(r){ return antes[r.atividade]; });
+    snap = { atual: agregar(rowsAte), anterior: agregar(rowsAntes), rodada: rodadaDados() };
     cb();
   }
 
