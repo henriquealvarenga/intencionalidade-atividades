@@ -147,6 +147,20 @@ uma base comum (100) e SEMPRE faça clamp**. Escolha o denominador pela **inten�
 (opcional não penaliza), não por um número avulso. **Sempre confira `maxPontos`
 contra a constante de score real** da atividade.
 
+**Bug do acumulado "chapado" (corrigido depois).** A 1ª versão somava **todas** as
+etapas com dados na sessão, sem olhar qual o professor estava revelando. Sintoma: com
+o campeonato todo jogado, o "geral" dava **o mesmo total em qualquer aba** — impossível
+ver "a classificação **após a 2ª** etapa". Causa: faltava cortar pela **posição da
+etapa no fluxo**. Correção: o acumulado é **progressivo** — revelar a Nª etapa soma só
+as etapas pontuadas de índice ≤ N no registry (`pontuadasAte(idAtual, incluir)`); as
+setas ↑↓ comparam "até a atual" × "até a anterior".
+
+> **Padrão reutilizável (revelação progressiva).** Num placar que é revelado **rodada
+> a rodada**, o acumulado de cada rodada é **cumulativo até ali**, não o total final.
+> Corte sempre pela **posição no fluxo** (o registry), não por "tudo que existe no
+> banco" — senão, com os dados completos, todas as rodadas mostram o mesmo número e o
+> drama do campeonato some.
+
 ---
 
 ## 7. **Áudio no Safari** — três camadas (a lição mais cara)
