@@ -115,6 +115,20 @@
     document.body.appendChild(b);
   }
 
+  /* Destrava o áudio no 1º gesto do usuário em QUALQUER lugar da página. O Safari
+     (mais rígido que o Chrome) só cria/retoma o AudioContext dentro de um gesto;
+     sem isso, o som do painel/atividade pode não tocar até o usuário acertar um
+     botão que chame destravar(). Aqui garantimos que qualquer toque/clique/tecla
+     já libera. Idempotente (once por evento). */
+  function bindAutoDestrava(){
+    var h = function(){ destravar(); };
+    ["pointerdown", "touchstart", "mousedown", "keydown"].forEach(function(ev){
+      document.addEventListener(ev, h, { once: true, capture: true, passive: true });
+    });
+  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", bindAutoDestrava);
+  else bindAutoDestrava();
+
   global.SFX = {
     click: click,
     acerto: acerto,
