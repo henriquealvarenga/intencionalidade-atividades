@@ -103,6 +103,7 @@
     rota: "02-fenomenos.html",      // página da atividade
     placar: true,                   // pontua → placar genérico do shell
     maxPontos: 8,                   // agregador §7: 8 itens × 1 pt = 8 (normaliza /100)
+    itensParaCompletar: global.FENOMENOS_DATA.ITENS.length, // aba "concluída" = todos fizeram os 8 itens
     dataGlobal: "FENOMENOS_DATA",   // window[...] carregado via <script> antes daqui
     render: render
   });

@@ -105,7 +105,11 @@
       "@media(max-width:640px){ .pod-et,.pod-delta{display:none} .pod-name{flex-basis:6em} }" +
       /* confete */
       ".confete{position:absolute; top:-12px; width:9px; height:14px; border-radius:2px; opacity:.9; animation:cair linear forwards}" +
-      "@keyframes cair{to{transform:translateY(420px) rotate(540deg); opacity:0}}";
+      "@keyframes cair{to{transform:translateY(420px) rotate(540deg); opacity:0}}" +
+      /* aba concluída por TODOS os grupos: fundo verde + ✓ (mesma linguagem do hub).
+         A aba ATIVA mantém o destaque laranja (por isso :not(.ativa)); o ✓ fica nas duas. */
+      ".aba.concluida:not(.ativa){border-color:var(--live); background:var(--live-soft); color:var(--live)}" +
+      ".aba.concluida::after{content:' \\2713'; font-weight:700}";
     document.head.appendChild(s);
   }
 
@@ -175,6 +179,7 @@
     registry.forEach(function(m){
       var b = document.createElement("button");
       b.className = "aba" + (m.id === atividadeAtiva ? " ativa" : "");
+      b.setAttribute("data-atividade", m.id);   // p/ pintar de verde quando concluída
       b.textContent = m.label;
       b.addEventListener("click", function(){ if (m.id !== atividadeAtiva) trocaAtividade(m.id); });
       box.appendChild(b);
@@ -202,6 +207,24 @@
     var d = row.dados || {};
     var a = d.casos || d.itens || d.vereditos || [];
     return Array.isArray(a) ? a.length : 0;
+  }
+
+  /* Uma atividade está "concluída" quando os N grupos definidos (campo Nº de grupos)
+     terminaram TODOS os itens dela — progresso ≥ itensParaCompletar (declarado pelo
+     módulo). all = todas as linhas da sessão. */
+  function atividadeConcluida(all, mod){
+    var total = mod && mod.itensParaCompletar;
+    if (!total || !numGrupos) return false;
+    var rows = all.filter(function(r){ return r.atividade === mod.id; });
+    var completos = porGrupo(rows).filter(function(r){ return progressoDe(r) >= total; }).length;
+    return completos >= numGrupos;
+  }
+  /* Pinta de verde (✓) as abas das atividades concluídas por todos os grupos. */
+  function atualizarAbasConcluidas(all){
+    registry.forEach(function(m){
+      var b = $("abas").querySelector('[data-atividade="' + m.id + '"]');
+      if (b) b.classList.toggle("concluida", atividadeConcluida(all, m));
+    });
   }
 
   /* =========================================================================
@@ -470,9 +493,12 @@
     if (!sessao){ setLive(false, "informe a sessão"); return; }
     if (!atividadeAtiva){ setLive(false, "sem atividade"); return; }
     if (fase !== "monitor" && fase !== "gabarito") return;  // pódio congelado
-    var rows = await SB.consultarSessao(sessao, atividadeAtiva);
-    ultimasRows = rows;
-    render(rows);
+    // Uma consulta serve a tudo: o miolo da atividade ativa + a marca de concluída
+    // em TODAS as abas. Evita um 2º request por ciclo.
+    var all = await SB.consultarSessaoTudo(sessao);
+    ultimasRows = all.filter(function(r){ return r.atividade === atividadeAtiva; });
+    atualizarAbasConcluidas(all);
+    render(ultimasRows);
     $("lastUpdate").textContent = "última atualização " + agora();
     setLive(true, fase === "gabarito" ? "ao vivo · revelado" : "ao vivo · oculto");
   }

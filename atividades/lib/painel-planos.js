@@ -90,6 +90,7 @@
     rota: "04-planos.html",
     placar: true,
     maxPontos: 8,                // agregador §7: 8 casos × 1 pt = 8 (normaliza /100)
+    itensParaCompletar: global.PLANOS_DATA.ITENS.length, // aba "concluída" = todos fizeram os 8 casos
     dataGlobal: "PLANOS_DATA",
     render: render
   });

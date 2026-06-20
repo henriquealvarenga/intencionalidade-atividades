@@ -102,6 +102,8 @@
     maxPontos: 8,                // agregador §7: 8 questões-base = 100; os 2 bônus são
                                  // seguro (a normalização limita a nota a 100) — bônus
                                  // não penaliza quem para antes. (Decisão do autor, jun/2026.)
+    // aba "concluída" = todos fizeram as 8 questões-base (os 2 bônus são opcionais)
+    itensParaCompletar: global.QUESTOES_DATA.QUESTOES.filter(function(q){ return !q.bonus; }).length,
     dataGlobal: "QUESTOES_DATA",
     render: render
   });

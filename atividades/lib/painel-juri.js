@@ -115,6 +115,7 @@
     label: "Júri",               // rótulo da aba / instrução do código
     rota: "05-juri.html",        // página da atividade (último no fluxo do campeonato)
     placar: false,               // sem placar — veredito não tem gabarito
+    itensParaCompletar: global.JURI_DATA.CASOS.length, // aba "concluída" = todos julgaram os 4 casos
     dataGlobal: "JURI_DATA",     // window[...] carregado via <script> antes daqui
     render: render
   });
