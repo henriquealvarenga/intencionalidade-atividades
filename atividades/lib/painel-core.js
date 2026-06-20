@@ -321,11 +321,15 @@
       '</div>';
   }
 
-  /* Gabarito (SPEC §6 "depois de revelar"): legenda + miolo do módulo + placar. */
+  /* Gabarito (SPEC §6 "depois de revelar"): SÓ legenda + miolo do módulo (o
+     gabarito/tally). Pontos e classificação NÃO aparecem aqui — vivem só nas
+     telas dedicadas "Resultado da rodada" e "Classificação geral" (decisão do
+     autor, jun/2026: evitar placar redundante embaixo do gabarito). */
   function renderGabarito(grupos, cores){
     $("legend").innerHTML = grupos.map(function(g){
       return '<span class="g"><span class="swatch" style="background:'+cores.get(g.grupo)+'"></span>'+esc(g.grupo)+'</span>';
     }).join("");
+    $("scoreboardWrap").style.display = "none";
 
     var mod = moduloAtivo();
     var cont = $("atividadeContainer");
@@ -334,21 +338,6 @@
       cont.innerHTML = '<div class="empty">Dados da atividade ('+esc(mod.dataGlobal)+') não carregados.</div>';
     } else if (mod && typeof mod.render === "function"){
       mod.render(cont, grupos, cores);
-    }
-
-    var sb = $("scoreboardWrap");
-    if (mod && mod.placar && grupos.length){
-      sb.style.display = "";
-      $("scoreboard").innerHTML = grupos.map(function(g,i){
-        return '<div class="score-row">'+
-          '<span class="rank">'+(i+1)+'.</span>'+
-          '<span class="swatch" style="background:'+cores.get(g.grupo)+'"></span>'+
-          '<span class="name">'+esc(g.grupo)+'</span>'+
-          '<span class="pts">'+(g.pontuacao == null ? "—" : g.pontuacao)+' pts</span>'+
-        '</div>';
-      }).join("");
-    } else {
-      sb.style.display = "none";
     }
   }
 
