@@ -40,6 +40,7 @@
   var fase = "monitor";
   var numGrupos = 6;
   var ultimasRows = [];       // últimas linhas da atividade atual (do polling)
+  var ultimasTodas = [];      // últimas linhas de TODAS as atividades (p/ marcar abas)
   var snap = null;            // snapshot do agregador, congelado durante o pódio
 
   function $(id){ return document.getElementById(id); }
@@ -145,7 +146,8 @@
     numGrupos = Math.max(2, Math.min(10, parseInt(n, 10) || 6));
     try { localStorage.setItem(STORE_GRUPOS, String(numGrupos)); } catch (e) { /* idem */ }
     var inp = $("numGruposInput"); if (inp) inp.value = numGrupos;
-    if (fase === "monitor") render(ultimasRows);
+    if (fase === "monitor") render(ultimasRows);   // atualiza o "X/N" do monitor
+    atualizarAbasConcluidas(ultimasTodas);          // e re-marca as abas com o novo N
   }
 
   /* ---- Atividade ativa ---- */
@@ -496,6 +498,7 @@
     // Uma consulta serve a tudo: o miolo da atividade ativa + a marca de concluída
     // em TODAS as abas. Evita um 2º request por ciclo.
     var all = await SB.consultarSessaoTudo(sessao);
+    ultimasTodas = all;
     ultimasRows = all.filter(function(r){ return r.atividade === atividadeAtiva; });
     atualizarAbasConcluidas(all);
     render(ultimasRows);
