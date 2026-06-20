@@ -104,6 +104,17 @@ tela "caprichada" dedicada a um dado (placar/pódio), **remova a versão embutid
 mais simples. No telão, menos elementos = menos ruído cognitivo. Cada fase do fluxo
 tem **um** propósito visual.
 
+**Status nas abas (vocabulário visual único).** As abas do painel ganharam um sinal
+de **atividade concluída por todos os N grupos** (fundo verde + ✓) — **a mesma
+linguagem do mapa do hub** (etapa feita = verde + ✓). Reaproveitar o vocabulário
+visual entre telas faz o sistema "falar a mesma língua". Implementação fiel à
+separação de concerns: **cada módulo declara o seu limiar** (`itensParaCompletar`;
+no Simulado, as 8 base, bônus opcional) e o **shell continua genérico** (só conta
+"grupos com progresso ≥ limiar ≥ N"). A aba ATIVA mantém o destaque (laranja) via
+`:not(.ativa)`; o ✓ vale para as duas. *Padrão:* **indicadores de status por item
+= módulo declara o critério, shell desenha genérico; reaproveite cores/ícones já
+usados em outras telas.**
+
 ---
 
 ## 5. Identidade compartilhada — **fim do re-login**
