@@ -30,25 +30,36 @@
   /* Retoma o contexto se suspenso (chamado dentro de um gesto). */
   function destravar() {
     var c = ac();
-    if (c && c.state === "suspended" && c.resume) c.resume();
+    if (c && c.state !== "running" && c.resume) c.resume();
+  }
+
+  /* Garante o contexto RODANDO antes de agendar e só então toca. No Safari o
+     resume() é assíncrono e agendar em currentTime enquanto "suspended" perde o
+     som (o envelope passa antes de o relógio do contexto andar). Aqui esperamos
+     o resume resolver para agendar. */
+  function comCtx(cb) {
+    var c = ac();
+    if (!c || mudo) return;
+    if (c.state === "running") { cb(c); return; }
+    if (c.resume) c.resume().then(function () { if (!mudo && c.state === "running") cb(c); }).catch(function () {});
+    else cb(c);
   }
 
   /* Uma nota: freq (Hz), dur (s), tipo de onda, pico de ganho, atraso (s). */
   function nota(freq, dur, tipo, vol, delay) {
-    var c = ac();
-    if (!c || mudo) return;
-    if (c.state === "suspended" && c.resume) c.resume();
-    var t0 = c.currentTime + (delay || 0);
-    var osc = c.createOscillator(), g = c.createGain();
-    osc.type = tipo || "sine";
-    osc.frequency.value = freq;
-    osc.connect(g); g.connect(c.destination);
-    var pico = (vol == null ? 0.12 : vol);
-    g.gain.setValueAtTime(0.0001, t0);
-    g.gain.exponentialRampToValueAtTime(pico, t0 + 0.008);
-    g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
-    osc.start(t0);
-    osc.stop(t0 + dur + 0.03);
+    comCtx(function (c) {
+      var t0 = c.currentTime + (delay || 0);
+      var osc = c.createOscillator(), g = c.createGain();
+      osc.type = tipo || "sine";
+      osc.frequency.value = freq;
+      osc.connect(g); g.connect(c.destination);
+      var pico = (vol == null ? 0.12 : vol);
+      g.gain.setValueAtTime(0.0001, t0);
+      g.gain.exponentialRampToValueAtTime(pico, t0 + 0.008);
+      g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+      osc.start(t0);
+      osc.stop(t0 + dur + 0.03);
+    });
   }
 
   /* ---- Sons do aluno (sutis e curtos: sala com muitos devices) ---- */
@@ -62,19 +73,18 @@
 
   /* ---- Sons do painel (telão, fonte única de evento) ---- */
   function whoosh() {                          // varredura curta ascendente
-    var c = ac();
-    if (!c || mudo) return;
-    if (c.state === "suspended" && c.resume) c.resume();
-    var t0 = c.currentTime;
-    var osc = c.createOscillator(), g = c.createGain();
-    osc.type = "sine";
-    osc.frequency.setValueAtTime(280, t0);
-    osc.frequency.exponentialRampToValueAtTime(880, t0 + 0.17);
-    g.gain.setValueAtTime(0.0001, t0);
-    g.gain.exponentialRampToValueAtTime(0.10, t0 + 0.03);
-    g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.22);
-    osc.connect(g); g.connect(c.destination);
-    osc.start(t0); osc.stop(t0 + 0.25);
+    comCtx(function (c) {
+      var t0 = c.currentTime;
+      var osc = c.createOscillator(), g = c.createGain();
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(280, t0);
+      osc.frequency.exponentialRampToValueAtTime(880, t0 + 0.17);
+      g.gain.setValueAtTime(0.0001, t0);
+      g.gain.exponentialRampToValueAtTime(0.10, t0 + 0.03);
+      g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.22);
+      osc.connect(g); g.connect(c.destination);
+      osc.start(t0); osc.stop(t0 + 0.25);
+    });
   }
   function fanfarra() {                         // arpejo triunfal + acorde sustentado
     [[523.25, 0], [659.25, 0.13], [783.99, 0.26], [1046.5, 0.39]].forEach(function (s) {
