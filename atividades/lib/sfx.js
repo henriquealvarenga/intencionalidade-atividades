@@ -45,7 +45,14 @@
     else cb(c);
   }
 
-  /* Uma nota: freq (Hz), dur (s), tipo de onda, pico de ganho, atraso (s). */
+  /* Uma nota: freq (Hz), dur (s), tipo de onda, pico de ganho, atraso (s).
+     Envelope com rampas LINEARES de ganho — de propósito, NÃO trocar por
+     exponentialRampToValueAtTime: o WebKit/Safari tem um bug antigo em que a
+     rampa exponencial no GainNode não é aplicada, o ganho fica preso no valor
+     inicial e o som sai INAUDÍVEL (o oscilador roda e o Safari até mostra o
+     indicador de áudio na aba, mas em volume ~0). A rampa exponencial também
+     não pode partir de 0 (exige um piso 0.0001), o que piora o problema.
+     Rampas lineares partem de 0, são portáveis e bastam para blips curtos. */
   function nota(freq, dur, tipo, vol, delay) {
     comCtx(function (c) {
       var t0 = c.currentTime + (delay || 0);
@@ -54,9 +61,9 @@
       osc.frequency.value = freq;
       osc.connect(g); g.connect(c.destination);
       var pico = (vol == null ? 0.12 : vol);
-      g.gain.setValueAtTime(0.0001, t0);
-      g.gain.exponentialRampToValueAtTime(pico, t0 + 0.008);
-      g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+      g.gain.setValueAtTime(0, t0);
+      g.gain.linearRampToValueAtTime(pico, t0 + 0.012);      // ataque (sem clique)
+      g.gain.linearRampToValueAtTime(0, t0 + dur);           // decaimento até zero
       osc.start(t0);
       osc.stop(t0 + dur + 0.03);
     });
@@ -78,10 +85,10 @@
       var osc = c.createOscillator(), g = c.createGain();
       osc.type = "sine";
       osc.frequency.setValueAtTime(280, t0);
-      osc.frequency.exponentialRampToValueAtTime(880, t0 + 0.17);
-      g.gain.setValueAtTime(0.0001, t0);
-      g.gain.exponentialRampToValueAtTime(0.10, t0 + 0.03);
-      g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.22);
+      osc.frequency.linearRampToValueAtTime(880, t0 + 0.17);  // rampas lineares: robustas no WebKit
+      g.gain.setValueAtTime(0, t0);
+      g.gain.linearRampToValueAtTime(0.12, t0 + 0.03);
+      g.gain.linearRampToValueAtTime(0, t0 + 0.22);
       osc.connect(g); g.connect(c.destination);
       osc.start(t0); osc.stop(t0 + 0.25);
     });
