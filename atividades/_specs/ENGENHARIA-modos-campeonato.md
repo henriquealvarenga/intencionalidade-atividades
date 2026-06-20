@@ -298,6 +298,41 @@ renderizado** (`.qmd`). Não versione o build. Publique só da `main`.
 - [ ] **Deploy:** só da `main`; cache-bust ao validar; confira `headSha` do run; hard-refresh certo por navegador (Safari = `Cmd+Option+R`). (§8)
 - [ ] **Quarto:** app estático em `resources`, conteúdo em `.qmd`, `docs/` gitignored, segredos/infra fora dos resources. (§9)
 - [ ] **Testar:** E2E via CDP (sem puppeteer), servidor via `psql`, semear via RPC real; limpar tudo depois. (§10)
+- [ ] **Login por magic link (Supabase):** o email embutido tem cota baixíssima → **custom SMTP** antes de usar com a turma. (§12)
+
+---
+
+## 12. (Operacional) Login do painel — rate limit de email do Supabase
+
+**Sintoma.** No meio dos testes, o login do painel passou a falhar com *"Não foi
+possível enviar o link"*. O Auth (GoTrue) estava no ar (health 200); o que retornava
+era **`HTTP 429 · over_email_send_rate_limit`** na chamada `POST /auth/v1/otp`.
+
+**Causa.** O **serviço de email embutido do Supabase** tem cota muito baixa (poucos
+envios/hora) e é explicitamente *"não use em produção"*. Vários logins seguidos
+(piorado por abrir o painel em **janela privada**, que não guarda sessão e força um
+email novo a cada vez) estouraram a cota.
+
+**Diagnóstico que vale reusar.** Antes de culpar o código, bata na API: `GET
+/auth/v1/health` (o serviço está de pé?) + reproduza o `POST /auth/v1/otp` por `curl`
+e leia o **status/corpo**. `429 over_email_send_rate_limit` é inequívoco — não é bug
+de front. (O envio do aluno é por **chave anônima/RPC**, então **nada** disso afeta as
+atividades; só o login do professor.)
+
+**Correção.** Configurar **custom SMTP** (Authentication → Emails → SMTP). Ao habilitar,
+a cota sobe (no nosso caso para 30/h) e fica ajustável. Para login que vai **só ao
+próprio email** do professor, **Gmail resolve** (Host `smtp.gmail.com`, porta 465,
+usuário = o gmail, senha = **App Password** de 16 dígitos com 2FA ligada) — o Supabase
+mostra um **aviso** de "provedor pessoal, não transacional", que é só aviso e pode
+salvar mesmo assim. Provedores transacionais (Resend/SendGrid/SES) são o caminho
+"certo" para escala/terceiros, mas exigem **domínio verificado** (fricção a mais).
+**Regra de ouro:** Host, Username e Password têm que ser **todos do mesmo provedor** —
+não misture Host de um com credenciais de outro.
+
+**Padrão reutilizável.** Auth por email (magic link/OTP) em Supabase: **o email
+embutido é só para protótipo**. Antes de pôr na frente de gente, configure SMTP
+próprio. E quando um login "quebrar", **cheque o status HTTP do `/auth/v1/otp`** — 429
+= cota, não regressão.
 
 ---
 
