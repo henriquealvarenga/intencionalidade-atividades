@@ -9,6 +9,8 @@ project:
     # Página de entrada: redireciona para o hub das atividades.
     - index.html
     - fonts/
+    # Favicon (recorte da capa do livro — mesmo ícone de henriquealvarenga.com/intencionalidade).
+    - images/
     # Publicamos só o APP — páginas .html + JS compartilhado em lib/ — e NÃO o glob
     # amplo: assim specs/planejamento (.md) em atividades/ nunca vazam para o site.
     # NÃO inclui supabase/ (infra).

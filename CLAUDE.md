@@ -35,6 +35,7 @@ Este arquivo é lido automaticamente por agentes Claude que trabalham nesse repo
     renderizados pelo Quarto.
   - `supabase/` — schema + RLS (infra, não publicado).
   - `fonts/` — WOFF2 self-hosted, usadas pelas atividades e pelos slides.
+  - `images/favicon.png` — ícone das abas (recorte da capa do livro, igual ao do livro).
   - `index.html` — só redireciona para `atividades/index.html`.
 - **Links para o livro** são URLs absolutas (`https://henriquealvarenga.com/intencionalidade/...`),
   pois o livro é outro site. Âncoras usadas: `#sec-parks`, `#sec-whitman`, `#sec-evr`,

@@ -6,8 +6,8 @@ lang: pt-BR
 format:
   revealjs:
     theme: theme-slides.scss
-    # @font-face self-hosted no <head> (ver _fonts.html para o porquê).
-    include-in-header: _fonts.html
+    # @font-face self-hosted no <head> (ver _head.html para o porquê).
+    include-in-header: _head.html
     transition: fade
     transition-speed: fast
     center: true

@@ -46,7 +46,7 @@ $presentation-title-slide-text-align: left;
 // Quarto compila este tema para site_libs/revealjs/dist/theme/, e dali
 // url("../fonts/") apontaria para o lugar errado (404). Por isso as
 // declarações @font-face ficam inline no <head> do deck, via
-// include-in-header: _fonts.html — onde ../fonts/ resolve relativo ao
+// include-in-header: _head.html — onde ../fonts/ resolve relativo ao
 // próprio deck (docs/apresentacao/ -> docs/fonts/), estável entre versões.
 
 .reveal {
