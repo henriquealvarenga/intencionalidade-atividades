@@ -61,7 +61,7 @@
     {
       id: 1, corte: "criminal", elo_continuum: 8,
       quem: "Kenneth Parks",
-      caso_completo: "../casos/5.11-sonambulismo-homicida.html#sec-parks",
+      caso_completo: "https://henriquealvarenga.com/intencionalidade/casos/5.11-sonambulismo-homicida.html#sec-parks",
       fonte: "R. v. Parks (1992); Broughton et al. (1994).",
       fatos: `Um homem de 23 anos, sob forte estresse e sem dormir direito há semanas, adormece no sofá de casa enquanto assiste à TV. Durante a madrugada, levanta-se, entra no carro e dirige cerca de 23 km até a casa dos sogros — com quem tinha ótima relação. Entra com a chave que guardava, mata a sogra e fere gravemente o sogro. Em seguida dirige até a delegacia e se entrega, confuso e sangrando das próprias mãos, dizendo não entender o que tinha feito. Não havia motivo, não havia brigas entre ele e os sogros, nem havia ganho possível. Exames do sono revelam um padrão muito anômalo, e há histórico denso de distúrbios do sono na família.`,
       real: `Parks foi absolvido pelo júri em 1988, e a Suprema Corte do Canadá confirmou a decisão em 1992, tratando o episódio como sonambulismo — um automatismo, não uma doença mental.`,
@@ -71,7 +71,7 @@
     {
       id: 2, corte: "criminal", elo_continuum: 5,
       quem: "Pedófilo por tumor (Burns & Swerdlow)",
-      caso_completo: "../casos/5.3-pedofilia.html",
+      caso_completo: "https://henriquealvarenga.com/intencionalidade/casos/5.3-pedofilia.html",
       fonte: "Burns & Swerdlow (2003).",
       fatos: `Um professor de 40 anos, casado, sem qualquer antecedente, passa a desenvolver em poucos meses impulsos sexuais por crianças. Ele considera esses impulsos abomináveis e tenta o tempo todo evitá-los, descrevendo "uma força interna estranha" que parece decidir por ele. Os impulsos passam a se traduzir em atos: ele começa a colecionar pornografia infantil e a fazer investidas sexuais sobre a enteada. A esposa descobre, ele é afastado de casa e acaba respondendo a um processo na Justiça. Uma investigação médica encontra um tumor no cérebro; retirado o tumor, os impulsos desaparecem por completo e ele retoma o autocontrole. Meses depois eles voltam, idênticos — e descobre-se que o tumor havia voltado a crescer. Uma nova cirurgia os elimina outra vez.`,
       real: `É um caso clínico real. A causa era um tumor numa região do cérebro ligada ao controle dos impulsos. Removido o tumor, os impulsos sumiram; quando ele voltou a crescer, voltaram idênticos; uma nova cirurgia os eliminou de novo.`,
@@ -81,7 +81,7 @@
     {
       id: 3, corte: "criminal", elo_continuum: 7,
       quem: "Charles Whitman",
-      caso_completo: "../casos/5.9-charles-whitman.html#sec-whitman",
+      caso_completo: "https://henriquealvarenga.com/intencionalidade/casos/5.9-charles-whitman.html#sec-whitman",
       fonte: "Comissão Connally (1966); Lavergne (1997).",
       fatos: `Um homem de 25 anos, ex-militar, sem antecedentes, passa meses atormentado por dores de cabeça intensas e por "pensamentos violentos e irracionais" que ele próprio estranha. Procura um médico e um psiquiatra. Na véspera, escreve um pedido: que examinem seu cérebro depois da morte, "para ver se há alguma desordem física". No dia seguinte, de forma planejada — reunindo armas e suprimentos e escolhendo um ponto elevado e estratégico —, mata a esposa e a mãe e comete um massacre, alcançando alvos a centenas de metros, antes de ser morto. A autópsia que ele mesmo pediu revela um tumor no cérebro.`,
       real: `Whitman foi morto durante o ataque — nunca chegou a ser julgado. A autópsia que ele mesmo pediu revelou um tumor comprimindo uma região do cérebro ligada à emoção. Uma comissão de peritos concluiu que o tumor "poderia ter contribuído", sem conseguir afirmar que o causou — e ele também vinha usando doses crescentes de um estimulante.`,
@@ -91,7 +91,7 @@
     {
       id: 4, corte: "civil", elo_continuum: 6,
       quem: "EVR / Elliott",
-      caso_completo: "../casos/5.13-evr-marcador-somatico.html#sec-evr",
+      caso_completo: "https://henriquealvarenga.com/intencionalidade/casos/5.13-evr-marcador-somatico.html#sec-evr",
       fonte: "Eslinger & Damasio (1985); Bechara et al. (1994).",
       fatos: `Um contador bem-sucedido, casado e pai de família, retira um tumor no cérebro e se recupera sem sequelas aparentes: inteligência, memória e linguagem permanecem intactas, e nos testes seu raciocínio é normal. Na vida real, porém, tornou-se incapaz de decidir bem. Gasta horas em detalhes triviais, não consegue estabelecer prioridades e embarca em negócios ruinosos que ele mesmo reconhece como arriscados. Não há impulso anômalo, compulsão nem agressividade. Ele apenas decide mal, repetidamente, até perder emprego, patrimônio e casamento — sempre capaz de explicar lucidamente, depois, por que aquilo tinha sido uma má decisão.`,
       real: `É um caso clínico real, e civil: EVR não cometeu crime. Manteve inteligência superior e sabia — inclusive em testes — qual era a escolha certa. Só não conseguia agir de acordo com o que sabia. Hoje, quem decide sobre a vida dele não é um júri criminal, mas uma vara civil — a pedido da família, que quer protegê-lo das próprias decisões.`,

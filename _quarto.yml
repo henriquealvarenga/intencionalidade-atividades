@@ -1,0 +1,16 @@
+project:
+  type: default
+  output-dir: docs
+  # Só as apresentações (revealjs) passam pelo Quarto. As atividades são HTML/JS
+  # puro e entram como resources (copiadas), não como render.
+  render:
+    - "apresentacao/*.qmd"
+  resources:
+    # Página de entrada: redireciona para o hub das atividades.
+    - index.html
+    - fonts/
+    # Publicamos só o APP — páginas .html + JS compartilhado em lib/ — e NÃO o glob
+    # amplo: assim specs/planejamento (.md) em atividades/ nunca vazam para o site.
+    # NÃO inclui supabase/ (infra).
+    - atividades/*.html
+    - atividades/lib/

@@ -1,0 +1,36 @@
+# Quarto
+/.quarto/
+**/*_files/
+
+# Claude Code / Cowork
+.claude/
+
+# Segredos / credenciais — NUNCA versionar.
+# O .env fica só no disco local do autor (senha do Supabase, etc.).
+# O .env.example (sem valores reais) FICA versionado como modelo.
+.env
+.env.*
+!.env.example
+
+# .md soltos no TOPO de atividades/ = handoffs/notas transitórias (ex.: _PROMPT-*).
+# Ficam fora do git. A regra é de 1 nível (não pega subpastas): a documentação de
+# design VERSIONADA vive em atividades/_specs/ — essa SIM entra no git, mas NÃO no
+# site (resources só publica *.html + lib/).
+atividades/*.md
+
+# VS Code / Positron
+.vscode/
+*.code-workspace
+
+# MacOS
+.DS_Store
+
+# Temporary files
+*~
+*.swp
+.tmp/
+
+# Output do Quarto: publicado pelo GitHub Actions (deploy nativo do Pages).
+/docs/
+
+**/*.quarto_ipynb

@@ -36,7 +36,7 @@
 (function (global) {
   "use strict";
 
-  var GLOSSARIO = "../apendices/10.3-glossario.html#sec-nomes-do-fenomeno";
+  var GLOSSARIO = "https://henriquealvarenga.com/intencionalidade/apendices/10.3-glossario.html#sec-nomes-do-fenomeno";
 
   /* Opções fixas do formato asserção-razão (não embaralham). */
   var AR_OPCOES = [

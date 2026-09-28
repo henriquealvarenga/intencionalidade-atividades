@@ -27,8 +27,8 @@
   "use strict";
 
   /* Caminhos dos capítulos (a partir de docs/atividades/). */
-  var CAP_14 = "../capitulos/1.4-intencionalidade-pratica.html";
-  var CAP_11 = "../capitulos/1.1-liberdade-coordenacao.html";
+  var CAP_14 = "https://henriquealvarenga.com/intencionalidade/capitulos/1.4-intencionalidade-pratica.html";
+  var CAP_11 = "https://henriquealvarenga.com/intencionalidade/capitulos/1.1-liberdade-coordenacao.html";
 
   /* ---- A RÉGUA: os 6 pontos de falha. Referência única (opções + painel). ---- */
   var REGUA = [
